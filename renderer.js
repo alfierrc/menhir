@@ -9,7 +9,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     // IMAGE types (photos, products)
     if (item.image && (item.type === 'image' || item.type === 'product')) {
       const wrapper = document.createElement('div');
-
+      wrapper.className = 'wrapper';
       const card = document.createElement('div');
       card.className = 'card';
 
@@ -32,6 +32,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // NOTE type (text-only)
     else if (item.type === 'note') {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'wrapper';
       const card = document.createElement('div');
       card.className = 'card';
   
@@ -49,7 +51,8 @@ window.addEventListener('DOMContentLoaded', async () => {
       content.appendChild(preview);
   
       card.appendChild(content);
-      grid.appendChild(card); // ✅ append here
+      wrapper.appendChild(card);
+      grid.appendChild(wrapper);// ✅ append here
     }
 
     // fallback?
@@ -60,6 +63,20 @@ window.addEventListener('DOMContentLoaded', async () => {
       card.appendChild(content);
     }
 
-    // grid.appendChild(card);
+
+  });
+  
+  const images = grid.querySelectorAll('img');
+  const promises = Array.from(images).map(img => {
+    if (img.complete) return Promise.resolve();
+    return new Promise(resolve => {
+      img.onload = img.onerror = resolve;
+    });
+  });
+
+  Promise.all(promises).then(() => {
+    const masonry = new MiniMasonry({
+      container: '.grid',
+    });
   });
 });
