@@ -1,0 +1,28 @@
+# Node modules
+node_modules/
+dist/
+build/
+
+# Mac system files
+.DS_Store
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Compiled files
+*.log
+*.tsbuildinfo
+
+# VSCode config (optional)
+.vscode/
+
+# Electron cache and packaging
+out/
+*.asar
+
+# Environment variables or secrets (optional)
+.env
+
+vault/
