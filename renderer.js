@@ -1,5 +1,6 @@
 window.addEventListener('DOMContentLoaded', async () => {
   const grid = document.getElementById('grid');
+  const loader = document.getElementById('loader');
   const items = await window.vaultAPI.loadVault();
 
   items.forEach(item => {
@@ -65,7 +66,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
   });
-  
+
   const images = grid.querySelectorAll('img');
   const promises = Array.from(images).map(img => {
     if (img.complete) return Promise.resolve();
@@ -75,6 +76,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   });
 
   Promise.all(promises).then(() => {
+    // ✅ Hide spinner
+    loader.style.display = 'none';
+
+    // ✅ Run MiniMasonry
     const masonry = new MiniMasonry({
       container: '.grid',
     });
