@@ -44,7 +44,7 @@ body {
 
 .card {
     background: white;
-    border-radius: 12px;
+    border-radius: 6px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
     overflow: hidden;
     display: flex;
@@ -84,6 +84,18 @@ body {
     font-size: 0.95rem;
     font-weight: 500;
     color: #333;
+}
+
+.price-box {
+    position: absolute; /* This will let you position the box within the card */
+    top: 10px; /* Adjust this as needed */
+    right: 10px; /* Adjust this as needed */
+    background: white; /* Adjust this as needed */
+    padding: 5px 10px; /* Adjust this as needed */
+    border-radius: 5px; /* Adjust this as needed */
+    color: #333; /* Adjust this as needed */
+    font-size: 0.8rem;
+    font-weight: 400;
 }
 
 .title {

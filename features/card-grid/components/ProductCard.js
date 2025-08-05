@@ -27,7 +27,7 @@ export function createProductCard(item, getImagePath) {
 
   if (item.price) {
     const price = document.createElement('div');
-    price.className = 'caption';
+    price.className = 'price-box';
     price.innerText = `£${item.price}`;
     content.appendChild(price);
   }
