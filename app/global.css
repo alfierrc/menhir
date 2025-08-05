@@ -50,18 +50,20 @@ body {
     display: flex;
     flex-direction: column;
     min-height: auto;
-    position: relative;
-    transition: transform 0.3s;
+    /* position: relative; */
+
 }
 
 .wrapper {
     /* margin-bottom: 1.5rem; */
+    background-color: rgba(0,0,0,0);
     break-inside: avoid;
     position: absolute;
+    transition: transform 0.4s;
 }
 
 .card:hover {
-    transform: scale(1.02);
+    outline: 2px solid #cdcdcd;
 }
 
 .card img {
@@ -78,22 +80,15 @@ body {
     justify-content: flex-start;
 }
 
-.product-details {
-    text-align: center;
-    margin-top: 0.3rem;
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: #333;
-}
-
 .price-box {
     position: absolute; /* This will let you position the box within the card */
     top: 10px; /* Adjust this as needed */
     right: 10px; /* Adjust this as needed */
-    background: white; /* Adjust this as needed */
+    background: #f4f4f4; /* Adjust this as needed */
     padding: 5px 10px; /* Adjust this as needed */
     border-radius: 5px; /* Adjust this as needed */
-    color: #333; /* Adjust this as needed */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    color: #575757; /* Adjust this as needed */
     font-size: 0.8rem;
     font-weight: 400;
 }
@@ -107,9 +102,9 @@ body {
 .photo-title {
     text-align: center;
     margin-top: 0.3rem;
-    font-size: 0.90rem;
-    font-weight: 500;
-    color: #333;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #575757;
 }
 
 .caption {

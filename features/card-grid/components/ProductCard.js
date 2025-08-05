@@ -14,7 +14,7 @@ export function createProductCard(item, getImagePath) {
   content.className = 'product-details';
 
   const title = document.createElement('div');
-  title.className = 'title';
+  title.className = 'photo-title';
   title.innerText = item.title || item.slug;
   content.appendChild(title);
 
