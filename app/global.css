@@ -1,5 +1,10 @@
+@font-face {
+    font-family: 'Redaction';
+    src: url('../public/fonts/Redaction_35-Italic.woff2') format('woff2');
+}
+
 body {
-    font-family: sans-serif;
+    font-family: "inter", sans-serif;
     margin: 0;
     padding: 2rem;
     background: #f4f4f4;
@@ -28,6 +33,14 @@ body {
     }
 } */
 
+.main-title {
+    font-family: "Redaction";
+    font-size: 3rem;
+    font-weight: 500;
+    margin-left: 15px;
+    color: #333;
+
+}
 
 .card {
     background: white;
@@ -82,7 +95,7 @@ body {
 .photo-title {
     text-align: center;
     margin-top: 0.3rem;
-    font-size: 0.95rem;
+    font-size: 0.90rem;
     font-weight: 500;
     color: #333;
 }
