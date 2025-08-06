@@ -2,6 +2,7 @@ import { createNoteCard } from './components/NoteCard.js';
 import { createImageCard } from './components/ImageCard.js';
 import { createProductCard } from './components/ProductCard.js';
 import { createUnknownCard } from './components/UnknownCard.js';
+import { openModal } from '../../features/modal-view/index.js';
 
 export function renderGrid(container, items, getImagePath) {
   container.innerHTML = ''; // clear previous content
@@ -29,6 +30,10 @@ export function renderGrid(container, items, getImagePath) {
         default:
           card = createUnknownCard(item);
       }
+
+      card.addEventListener('click', () => {
+        openModal(item);
+      });
 
       container.appendChild(card);
   });

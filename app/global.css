@@ -1,10 +1,10 @@
 @font-face {
-    font-family: 'Redaction';
-    src: url('../public/fonts/Redaction_35-Italic.woff2') format('woff2');
+    font-family: 'Necto Mono';
+    src: url('../public/fonts/NectoMono-Regular.woff2') format('woff2');
 }
 
 body {
-    font-family: "inter", sans-serif;
+    font-family: "Necto Mono", sans-serif;
     margin: 0;
     padding: 2rem;
     background: #f4f4f4;
@@ -37,10 +37,31 @@ body {
     font-family: "Jacquarda Bastarda 9";
     font-size: 2rem;
     font-weight: 500;
-    margin-left: 15px;
-    color: #333;
 
+    color: #000000;
+    width: 150px;
+  border: 1px solid #808080;
+  padding: 10px;
+  margin-left: 13px;
+  margin-bottom: 15px;
+  border-radius: 2px;
+  background-color: rgb(234, 234, 234);
 }
+
+/* .tags {
+    -webkit-appearance: none;
+    border: 0px solid black;
+    font-family: "Necto", sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    padding: 2px 10px 2px 10px;
+    background-color: rgb(255, 255, 255);
+    border-radius: 20px;
+    color: black;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 0 8px 3px white;
+} */
 
 .card {
     background: white;
@@ -50,6 +71,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: auto;
+    cursor: pointer;
     /* position: relative; */
 
 }
@@ -59,7 +81,6 @@ body {
     background-color: rgba(0,0,0,0);
     break-inside: avoid;
     position: absolute;
-    transition: transform 0.4s;
 }
 
 .card:hover {
