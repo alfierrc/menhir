@@ -1,15 +1,22 @@
-import { createModal } from './components/Modal.js';
+import { createNoteModal } from './components/NoteModal.js';
+import { createMediaModal } from './components/MediaModal.js';
 
-export function openModal(item) {
-  const modal = createModal(item);
-  document.body.appendChild(modal);
-
-  // ESC to close
-  const esc = e => {
-    if (e.key === 'Escape') {
-      modal.remove();
-      window.removeEventListener('keydown', esc);
+export function openModal(item, getImagePath) {
+    let modal;
+  
+    if (item.type === 'note') {
+      modal = createNoteModal(item);
+    } else {
+      modal = createMediaModal(item, getImagePath);
     }
-  };
-  window.addEventListener('keydown', esc);
-}
+  
+    document.body.appendChild(modal);
+  
+    const esc = e => {
+      if (e.key === 'Escape') {
+        modal.remove();
+        window.removeEventListener('keydown', esc);
+      }
+    };
+    window.addEventListener('keydown', esc);
+  }

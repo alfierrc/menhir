@@ -40,12 +40,12 @@ body {
 
     color: #000000;
     width: 150px;
-  border: 1px solid #808080;
-  padding: 10px;
-  margin-left: 13px;
-  margin-bottom: 15px;
-  border-radius: 2px;
-  background-color: rgb(234, 234, 234);
+    border: 1px solid #808080;
+    padding: 10px;
+    margin-left: 13px;
+    margin-bottom: 15px;
+    border-radius: 2px;
+    background-color: rgb(234, 234, 234);
 }
 
 /* .tags {

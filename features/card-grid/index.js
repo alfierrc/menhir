@@ -32,7 +32,7 @@ export function renderGrid(container, items, getImagePath) {
       }
 
       card.addEventListener('click', () => {
-        openModal(item);
+        openModal(item, getImagePath);
       });
 
       container.appendChild(card);
