@@ -7,7 +7,8 @@ export function createNoteModal(item) {
   
     const left = document.createElement('div');
     left.className = 'modal-left';
-    left.innerHTML = marked.parse(item.content || '');
+    const html = marked.parse(item.content || '');
+    noteContent.innerHTML = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
   
     const right = document.createElement('div');
     right.className = 'modal-right';
@@ -20,8 +21,10 @@ export function createNoteModal(item) {
     meta.className = 'modal-meta';
   
     Object.entries(item).forEach(([key, value]) => {
-      if (['title', 'slug', 'content', 'image'].includes(key)) return;
+      if (['title','slug','content','image','folder'].includes(key)) return;
+      if (value && typeof value === 'object') return; // pretty-print later
       const line = document.createElement('div');
+      line.className = 'meta-line';
       line.innerHTML = `<strong>${key}:</strong> ${value}`;
       meta.appendChild(line);
     });

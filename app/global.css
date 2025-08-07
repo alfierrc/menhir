@@ -1,14 +1,25 @@
+:root{
+    --bg:#f6f6f6; --panel:#ffffff; --ink:#111; --ink-dim:#555; --rule:#e6e6e6; --accent:#0f62fe;
+    --font-sans: system-ui, -apple-system, Segoe UI, Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "Necto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --fs-0:12px; --fs-1:14px; --fs-2:16px; --fs-3:18px; --fs-4:22px;
+    --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:24px; --s-6:32px;
+    --radius-1:4px; --radius-2:8px;
+    --shadow-1:0 2px 8px rgba(0,0,0,.06);
+  }
+
+
+
 @font-face {
     font-family: 'Necto Mono';
     src: url('../public/fonts/NectoMono-Regular.woff2') format('woff2');
 }
 
-body {
-    font-family: "Necto Mono", sans-serif;
-    margin: 0;
-    padding: 2rem;
-    background: #f4f4f4;
-}
+body{ background:var(--bg); color:var(--ink); font-family:var(--font-sans); line-height:1.5; margin:0; padding:var(--s-6); }
+
+.card{ background:var(--panel); border-radius:var(--radius-2); box-shadow:var(--shadow-1); }
+.photo-title{ font-size:var(--fs-1); color:var(--ink-dim); text-align:center; margin-top:var(--s-1); }
+.wrapper{ position:static; break-inside:avoid; }
 
 .grid {
     width: 100%;
@@ -63,25 +74,7 @@ body {
     box-shadow: 0 0 8px 3px white;
 } */
 
-.card {
-    background: white;
-    border-radius: 6px;
-    /* border: solid 1px grey; */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    min-height: auto;
-    cursor: pointer;
-    /* position: relative; */
-}
 
-.wrapper {
-    /* margin-bottom: 1.5rem; */
-    background-color: rgba(0,0,0,0);
-    break-inside: avoid;
-    position: absolute;
-}
 
 .card:hover {
     outline: 2px solid #cdcdcd;
@@ -121,13 +114,7 @@ body {
     margin: 0 0 0.5rem 0;
 }
 
-.photo-title {
-    text-align: center;
-    margin-top: 0.3rem;
-    font-size: 0.85rem;
-    font-weight: 400;
-    color: #575757;
-}
+
 
 .caption {
     font-size: 0.9rem;
