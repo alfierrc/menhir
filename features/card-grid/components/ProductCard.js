@@ -6,7 +6,11 @@ export function createProductCard(item, getImagePath) {
   card.className = 'card';
 
   const img = document.createElement('img');
-  img.src = getImagePath(item.folder, item.image);
+  if (item.image) {
+    getImagePath(item.folder, item.image).then((src) => {
+      img.src = src;
+    });
+  }
   img.alt = item.title || item.slug;
   card.appendChild(img);
 
