@@ -19,7 +19,7 @@ body{ background:var(--bg); color:var(--ink); font-family:var(--font-sans); line
 
 .card{ background:var(--panel); border-radius:var(--radius-2); box-shadow:var(--shadow-1); }
 .photo-title{ font-size:var(--fs-1); color:var(--ink-dim); text-align:center; margin-top:var(--s-1); }
-.wrapper{ position:static; break-inside:avoid; }
+.wrapper{ position:absolute; break-inside:avoid; }
 
 .grid {
     width: 100%;
@@ -113,8 +113,6 @@ body{ background:var(--bg); color:var(--ink); font-family:var(--font-sans); line
     font-size: 1rem;
     margin: 0 0 0.5rem 0;
 }
-
-
 
 .caption {
     font-size: 0.9rem;
