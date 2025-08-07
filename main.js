@@ -1,6 +1,14 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { scanVault } = require('./lib/vaultReader');
+const { pathToFileURL } = require('url');
+
+// existing ipcMain.handle('load-vault', ...) stays as-is
+
+ipcMain.handle('get-image-path', (_e, { folder, filename }) => {
+  const full = path.join(__dirname, 'vault', folder, filename);
+  return pathToFileURL(full).href; // returns file:///... URL safe for <img src>
+});
 
 // Create window
 function createWindow() {
