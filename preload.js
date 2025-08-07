@@ -1,3 +1,11 @@
+const { contextBridge, ipcRenderer } = require('electron');
+console.log('[preload] loaded');
+
+contextBridge.exposeInMainWorld('api', {
+  ping: () => 'pong',
+  loadVault: () => ipcRenderer.invoke('load-vault'),
+});
+
 // preload.js
 const { contextBridge, ipcRenderer } = require('electron');
 
