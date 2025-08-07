@@ -4,10 +4,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   const grid = document.getElementById('grid');
   const loader = document.getElementById('loader');
 
-  const items = await window.vaultAPI.loadVault();
+  const items = await window.api.loadVault();
 
   // Render cards
-  renderGrid(grid, items, window.vaultAPI.getImagePath);
+  renderGrid(grid, items, window.api.getImagePath);
 
   // const images = document.getElementsByTagName('img');
 
