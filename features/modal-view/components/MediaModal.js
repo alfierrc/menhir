@@ -35,7 +35,8 @@ export function createMediaModal(item, getImagePath) {
   
     const noteContent = document.createElement('div');
     noteContent.className = 'modal-note-body';
-    noteContent.innerHTML = marked.parse(item.content || '');
+    const html = marked.parse(item.content || '');
+    noteContent.innerHTML = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });    
     right.appendChild(noteContent);
   
     const close = document.createElement('button');

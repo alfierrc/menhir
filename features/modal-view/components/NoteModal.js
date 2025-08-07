@@ -7,7 +7,8 @@ export function createNoteModal(item) {
   
     const left = document.createElement('div');
     left.className = 'modal-left';
-    left.innerHTML = marked.parse(item.content || '');
+    const html = marked.parse(item.content || '');
+    noteContent.innerHTML = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
   
     const right = document.createElement('div');
     right.className = 'modal-right';
