@@ -9,11 +9,11 @@ function createWindow() {
   height: 800,
   webPreferences: {
     preload: path.join(__dirname, 'preload.js'),
-    contextIsolation: true,     // this should stay true
+    contextIsolation: true,
     enableRemoteModule: false,
-    nodeIntegration: false,     // this should stay false
-    sandbox: false              // 🔑 disable sandboxing so preload can use Node modules
-  },
+    nodeIntegration: false,
+    sandbox: true
+  }
 });
 
   win.loadFile('./app/index.html');
