@@ -21,8 +21,10 @@ export function createNoteModal(item) {
     meta.className = 'modal-meta';
   
     Object.entries(item).forEach(([key, value]) => {
-      if (['title', 'slug', 'content', 'image'].includes(key)) return;
+      if (['title','slug','content','image','folder'].includes(key)) return;
+      if (value && typeof value === 'object') return; // pretty-print later
       const line = document.createElement('div');
+      line.className = 'meta-line';
       line.innerHTML = `<strong>${key}:</strong> ${value}`;
       meta.appendChild(line);
     });
