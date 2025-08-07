@@ -11,14 +11,15 @@
   // Optional: quick sanity log (you can remove later)
   try { console.log('[preload] loaded'); } catch {}
 
-  cb.exposeInMainWorld('api', {
+  contextBridge.exposeInMainWorld('api', {
     ping: () => 'pong',
-    loadVault: () => ir.invoke('load-vault'),
-    saveItem: (item) => ir.invoke('save-item', item),
-    onVaultEvent: (cb2) => {
-      const handler = (_e, payload) => cb2(payload);
-      ir.on('vault-event', handler);
-      return () => ir.removeListener('vault-event', handler);
+    loadVault: () => ipcRenderer.invoke('load-vault'),
+    getImagePath: (folder, filename) =>
+      ipcRenderer.invoke('get-image-path', { folder, filename }),
+    onVaultEvent: (cb) => {
+      const handler = (_e, payload) => cb(payload);
+      ipcRenderer.on('vault-event', handler);
+      return () => ipcRenderer.removeListener('vault-event', handler);
     },
   });
 
