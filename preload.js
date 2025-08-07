@@ -1,25 +1,27 @@
-const { contextBridge, ipcRenderer } = require('electron');
-console.log('[preload] loaded');
-
-contextBridge.exposeInMainWorld('api', {
-  ping: () => 'pong',
-  loadVault: () => ipcRenderer.invoke('load-vault'),
-});
-
 // preload.js
-const { contextBridge, ipcRenderer } = require('electron');
+(() => {
+  // If this file runs twice (hot reload, etc.), exit early
+  if (globalThis.__menhirPreloadLoaded) return;
 
-// Expose a minimal, typed surface to the renderer.
-// All real work happens in the main process via IPC.
-contextBridge.exposeInMainWorld('api', {
-  loadVault: () => ipcRenderer.invoke('load-vault'),
-  saveItem: (item) => ipcRenderer.invoke('save-item', item),
-  openItem: (id) => ipcRenderer.invoke('open-item', id),
+  // Keep Node built-ins out of here; only electron is allowed in sandboxed preload
+  const electron = require('electron');
+  const cb = electron.contextBridge;
+  const ir = electron.ipcRenderer;
 
-  // live updates (we'll wire this in Phase 1 when we add chokidar)
-  onVaultEvent: (callback) => {
-    const handler = (_event, payload) => callback(payload);
-    ipcRenderer.on('vault-event', handler);
-    return () => ipcRenderer.removeListener('vault-event', handler);
-  },
-});
+  // Optional: quick sanity log (you can remove later)
+  try { console.log('[preload] loaded'); } catch {}
+
+  cb.exposeInMainWorld('api', {
+    ping: () => 'pong',
+    loadVault: () => ir.invoke('load-vault'),
+    saveItem: (item) => ir.invoke('save-item', item),
+    onVaultEvent: (cb2) => {
+      const handler = (_e, payload) => cb2(payload);
+      ir.on('vault-event', handler);
+      return () => ir.removeListener('vault-event', handler);
+    },
+  });
+
+  // Mark as loaded to avoid re-init on subsequent executions
+  globalThis.__menhirPreloadLoaded = true;
+})();
