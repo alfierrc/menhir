@@ -236,3 +236,37 @@ body.modal-open {
     transform: rotate(360deg);
   }
 }
+
+/* Centered tiny preview mode (before Masonry) */
+.grid.prelayout {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center; /* vertically centers when few tiles */
+  gap: 12px;
+  padding: 24px;
+  min-height: 60vh; /* so you see the cluster */
+}
+
+/* Override absolute positioning while prelayout */
+.grid.prelayout .wrapper {
+  position: static; /* MiniMasonry uses absolute; we disable it here */
+}
+
+/* Make tiles small and uniform during prelayout */
+.grid.prelayout .card {
+  width: 160px; /* tweak to taste */
+  border-radius: 10px;
+  transform: scale(0.92);
+  transition: transform 0.15s ease;
+}
+.grid.prelayout .card:hover {
+  transform: scale(0.96);
+}
+
+/* Keep images contained in the tiny tiles */
+.grid.prelayout .card img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
