@@ -1,28 +1,47 @@
 export function createImageCard(item) {
-  const wrap = document.createElement('div');
-  wrap.className = 'wrapper';
+  const wrap = document.createElement("div");
+  wrap.className = "wrapper";
 
-  const card = document.createElement('div');
-  card.className = 'card';
+  const card = document.createElement("article");
+  card.className = "card";
 
-  const img = document.createElement('img');
-  card.appendChild(img);
+  // --- media ---
+  const media = document.createElement("div");
+  media.className = "card-media";
+  // Optional: per-item aspect ratio, e.g. square
+  // media.style.setProperty('--ar', '1/1');
 
-  const title = document.createElement('div');
-  title.className = 'title';
+  const img = document.createElement("img");
+  media.appendChild(img);
+  card.appendChild(media);
+
+  // --- body / caption ---
+  const body = document.createElement("div");
+  body.className = "card-body";
+
+  const title = document.createElement("div");
+  title.className = "card-title";
   title.textContent = item.title || item.slug;
-  card.appendChild(title);
+  body.appendChild(title);
 
-  const meta = document.createElement('div');
-  meta.className = 'meta';
-  meta.textContent = (item.tags || []).join(', ');
-  card.appendChild(meta);
+  // Optional meta (tags/domains)
+  if (item.tags && item.tags.length) {
+    const meta = document.createElement("div");
+    meta.className = "card-meta";
+    meta.textContent = item.tags.join(" · ");
+    body.appendChild(meta);
+  }
 
+  card.appendChild(body);
   wrap.appendChild(card);
 
-  // set src asynchronously via api.getImagePath when available
+  // Set image src asynchronously
   if (item.image && window.api?.getImagePath) {
-    window.api.getImagePath(item.folder, item.image).then((src) => { img.src = src; })
+    window.api
+      .getImagePath(item.folder, item.image)
+      .then((src) => {
+        img.src = src;
+      })
       .catch(() => {});
   }
 
