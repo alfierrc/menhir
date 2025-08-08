@@ -3,6 +3,8 @@ const path = require('path');
 const { scanVault } = require('./lib/vaultReader');
 const { pathToFileURL } = require('url');
 const { saveItem } = require('./lib/vaultWriter');
+const { spawn } = require('child_process');
+
 
 ipcMain.handle('save-item', async (_e, item) => {
   const vaultPath = path.join(__dirname, 'vault');
@@ -37,7 +39,20 @@ function createWindow() {
 app.whenReady().then(createWindow);
 
 // Expose scanVault to frontend via IPC
-ipcMain.handle('load-vault', () => {
+ipcMain.handle('load-vault', async () => {
   const vaultPath = path.join(__dirname, 'vault');
-  return scanVault(vaultPath);
+  const child = spawn(process.execPath, [path.join(__dirname, 'lib', 'scanWorker.js'), vaultPath], {
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  return new Promise((resolve, reject) => {
+    let out = '';
+    child.stdout.on('data', chunk => out += chunk);
+    child.stderr.on('data', err => console.error('[scan]', String(err)));
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code !== 0) return reject(new Error('scan failed'));
+      try { resolve(JSON.parse(out)); } catch (e) { reject(e); }
+    });
+  });
 });
