@@ -101,9 +101,9 @@ header {
 
 .modal {
   position: absolute;
-  inset: 24px;
+  inset: 100px;
   background: #fff;
-  border-radius: 14px;
+  border-radius: 2px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   display: grid;
   grid-template-columns: minmax(420px, 1fr) 420px;
@@ -113,16 +113,20 @@ header {
 
 /* left: media */
 .modal-left {
-  background: #111;
-  display: grid;
-  place-items: center;
-  overflow: auto; /* zoomed/tall images scroll */
+  background: var(--ink);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px; /* space around the image */
+  overflow: hidden; /* no scrollbars */
 }
+
 .modal-left img {
   max-width: 100%;
-  height: auto;
-  display: block;
-  background: #111;
+  max-height: 100%;
+  object-fit: contain; /* always show whole image */
+  border-radius: 2px; /* optional nice corner */
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 /* right: details */
