@@ -1,23 +1,41 @@
 export function createShell() {
-  // Create overlay
-  const overlay = document.createElement("div");
-  overlay.className = "modal-overlay";
+  // Use the existing mount if present; else create it
+  let overlay = document.getElementById("modal-root");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "modal-root";
+    overlay.className = "modal-overlay";
+    document.body.appendChild(overlay);
+  } else {
+    overlay.innerHTML = "";
+    overlay.className = "modal-overlay";
+  }
 
-  // Main container
+  // Main container with left/right
   const modal = document.createElement("div");
   modal.className = "modal";
 
-  // Left / right panes
   const left = document.createElement("div");
   left.className = "modal-left";
 
   const right = document.createElement("div");
   right.className = "modal-right";
 
-  // Right panel sections
+  // Right header with title slot + close button
   const header = document.createElement("div");
   header.className = "modal-header";
 
+  const titleWrap = document.createElement("div");
+  titleWrap.className = "modal-title"; // views will set textContent
+  header.appendChild(titleWrap);
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "modal-close";
+  closeBtn.setAttribute("aria-label", "Close");
+  closeBtn.textContent = "✕";
+  header.appendChild(closeBtn);
+
+  // Right body (views will append .modal-section blocks here)
   const body = document.createElement("div");
   body.className = "modal-body";
 
@@ -27,31 +45,34 @@ export function createShell() {
   modal.appendChild(left);
   modal.appendChild(right);
   overlay.appendChild(modal);
-  document.body.appendChild(overlay);
 
-  // Close handling
   function close() {
-    overlay.remove();
+    overlay.classList.remove("is-open");
+    overlay.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
+    overlay.innerHTML = "";
   }
-  // mark open for CSS
-  overlay.classList.add("is-open");
 
+  // Wire close interactions
+  closeBtn.addEventListener("click", close);
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) close();
   });
-  window.addEventListener("keydown", (e) => {
+  const onKey = (e) => {
     if (e.key === "Escape") close();
-  });
+  };
+  document.addEventListener("keydown", onKey, { once: true });
 
-  // Lock scroll while modal open
+  // Open state + scroll lock
+  overlay.classList.add("is-open");
+  overlay.setAttribute("aria-hidden", "false");
   document.body.classList.add("modal-open");
 
   return {
     slots: {
       left,
-      header,
-      body,
+      header: titleWrap, // views set title text here
+      body, // views append sections here
     },
     close,
   };
