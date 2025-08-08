@@ -30,7 +30,7 @@ header {
 .card {
   background: var(--panel);
   border: 1px solid var(--rule);
-  border-radius: 12px;
+  border-radius: 2px;
   overflow: hidden; /* round the image corners */
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   transition: transform 0.12s ease, box-shadow 0.12s ease,
@@ -52,10 +52,11 @@ header {
   margin: 6px 6px 10px; /* outside the tile, inside wrapper */
 }
 .card-caption .card-title {
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 1.3;
-  color: var(--ink);
+  text-align: center;
+  margin-top: 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--ink-dim);
 }
 .card-caption .card-meta {
   margin-top: 2px;
