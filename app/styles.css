@@ -195,6 +195,20 @@ header {
   white-space: pre-wrap;
 }
 
+/* For note modals: make left pane scrollable text */
+.modal-note-content {
+  padding: 20px;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+/* Optional: match markdown/body styling */
+.modal-note-content .md p {
+  margin-bottom: 12px;
+}
+
 /* lock page scroll when modal open */
 body.modal-open {
   overflow: hidden;
