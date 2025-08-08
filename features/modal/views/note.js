@@ -1,30 +1,33 @@
+import { renderMarkdown } from "../md.js";
+
 export function renderNoteView({ item, slots }) {
-  // LEFT: Note content
-  const noteWrap = document.createElement("div");
-  noteWrap.className = "modal-note-content";
+  // LEFT: note content (markdown)
+  slots.left.classList.add("note-left"); // <-- makes left pane white
+  slots.left.innerHTML = "";
 
-  if (item.content && item.content.trim()) {
-    // For now: safe plain text (markdown renderer can be added later)
-    const body = document.createElement("div");
-    body.className = "md"; // reuse .md styles from other modals if you have them
-    body.textContent = item.content.trim();
-    noteWrap.appendChild(body);
-  } else {
-    const empty = document.createElement("div");
-    empty.className = "md";
-    empty.style.opacity = 0.5;
-    empty.textContent = "(No content)";
-    noteWrap.appendChild(empty);
-  }
+  const scroller = document.createElement("div");
+  scroller.className = "modal-note-content";
 
-  slots.left.appendChild(noteWrap);
+  const content =
+    item && item.content && item.content.trim()
+      ? renderMarkdown(item.content)
+      : (() => {
+          const el = document.createElement("div");
+          el.className = "md";
+          el.style.opacity = "0.6";
+          el.textContent = "(No content)";
+          return el;
+        })();
 
-  // HEADER: title
+  scroller.appendChild(content);
+  slots.left.appendChild(scroller);
+
+  // RIGHT: header/title
   slots.header.textContent = item.title || item.slug || "Untitled";
 
-  // FRONTMATTER: key–value list
+  // RIGHT: frontmatter grid
   const skip = new Set(["slug", "folder", "type", "content", "image"]);
-  const entries = Object.entries(item).filter(
+  const entries = Object.entries(item || {}).filter(
     ([k, v]) => !skip.has(k) && v != null && v !== ""
   );
   if (entries.length) {
