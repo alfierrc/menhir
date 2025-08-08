@@ -18,7 +18,9 @@
   "homepage": "https://github.com/alfierrc/menhir#readme",
   "description": "",
   "dependencies": {
+    "dompurify": "^3.2.6",
     "electron": "^37.2.6",
-    "gray-matter": "^4.0.3"
+    "gray-matter": "^4.0.3",
+    "marked": "^16.1.2"
   }
 }
