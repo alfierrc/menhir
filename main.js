@@ -2,8 +2,13 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { scanVault } = require('./lib/vaultReader');
 const { pathToFileURL } = require('url');
+const { saveItem } = require('./lib/vaultWriter');
 
-// existing ipcMain.handle('load-vault', ...) stays as-is
+ipcMain.handle('save-item', async (_e, item) => {
+  const vaultPath = path.join(__dirname, 'vault');
+  await saveItem(vaultPath, item);
+  return { ok: true };
+});
 
 ipcMain.handle('get-image-path', (_e, { folder, filename }) => {
   const full = path.join(__dirname, 'vault', folder, filename);

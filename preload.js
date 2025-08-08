@@ -14,6 +14,7 @@
   cb.exposeInMainWorld('api', {
     ping: () => 'pong',
     loadVault: () => ir.invoke('load-vault'),
+    saveItem: (item) => ipcRenderer.invoke('save-item', item),
     getImagePath: (folder, filename) =>
       ir.invoke('get-image-path', { folder, filename }),
     onVaultEvent: (cb) => {
