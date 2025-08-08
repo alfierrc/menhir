@@ -46,16 +46,17 @@ window.addEventListener("DOMContentLoaded", async () => {
   const spinner = document.getElementById("spinner");
 
   try {
-    // turn on prelayout cluster
     grid.classList.add("prelayout");
 
-    const items = await window.api.loadVault();
+    let items = await window.api.loadVault();
     console.log("[renderer] items:", items.length);
+
+    // sort: newest first
+    items.sort((a, b) => (b.sortTs || 0) - (a.sortTs || 0));
 
     await renderGrid(grid, items);
     await waitForImages(grid, { timeout: 8000 });
 
-    // turn off prelayout just before Masonry takes over
     grid.classList.remove("prelayout");
 
     const masonry = new MiniMasonry({
