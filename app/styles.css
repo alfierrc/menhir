@@ -59,6 +59,7 @@ header {
   color: var(--ink-dim);
 }
 .card-caption .card-meta {
+  text-align: center;
   margin-top: 2px;
   color: var(--ink-dim);
   font-size: 12px;
