@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const { pathToFileURL } = require('url');  
 const { scanVault } = require('./lib/vaultReader');
 
 function createWindow() {
@@ -27,6 +28,13 @@ ipcMain.handle('load-vault', async () => {
     console.error('[main] scan error', e);
     return []; // never reject — UI must render even if empty
   }
+});
+
+ipcMain.removeHandler('get-image-path');
+ipcMain.handle('get-image-path', (_e, { folder, filename }) => {
+  const vaultPath = process.env.MENHIR_VAULT || path.join(__dirname, 'vault');
+  const full = path.join(vaultPath, folder, filename);
+  return pathToFileURL(full).href;              // e.g., file:///Users/you/menhir/vault/image/foo.jpg
 });
 
 app.whenReady().then(createWindow);
