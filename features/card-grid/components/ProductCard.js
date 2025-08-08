@@ -1,4 +1,4 @@
-export function createImageCard(item) {
+export function createProductCard(item) {
   const wrap = document.createElement("div");
   wrap.className = "wrapper";
 
