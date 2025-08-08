@@ -75,6 +75,7 @@ header {
   color: var(--ink-dim);
   font-size: 12px;
 }
+
 .title {
   margin: 8px 0 0;
   font-weight: 600;
@@ -85,6 +86,36 @@ header {
   color: var(--ink-dim);
   font-size: 12px;
   margin-top: 4px;
+}
+
+/* Note tile look */
+.card.note {
+  padding: 12px 14px; /* inner space */
+  border-radius: 2px;
+  border: 1px solid var(--rule);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  background: #fff;
+}
+
+.card.note .card-title {
+  font-weight: 650;
+  font-size: 15px;
+  margin: 0 0 6px;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* clamp long titles */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card.note .excerpt {
+  color: var(--ink-dim);
+  font-size: 13px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* 3-line teaser */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ----- Modal shell ----- */

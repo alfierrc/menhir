@@ -1,32 +1,32 @@
-import { createShell } from "../../modal/shell.js";
-import { MODAL_VIEWS } from "../../modal/registry.js";
 import { openModalForItem } from "../../modal/index.js";
 
 export function createNoteCard(item) {
   const wrap = document.createElement("div");
   wrap.className = "wrapper";
+  wrap.style.cursor = "pointer";
 
   const card = document.createElement("article");
-  card.className = "card";
-
-  const body = document.createElement("div");
-  body.className = "card-body";
+  card.className = "card note";
 
   const title = document.createElement("div");
   title.className = "card-title";
   title.textContent = item.title || item.slug || "Note";
-  body.appendChild(title);
+  card.appendChild(title);
 
   if (item.content) {
-    const meta = document.createElement("div");
-    meta.className = "card-meta";
-    meta.textContent = item.content.slice(0, 120).trim();
-    body.appendChild(meta);
+    const ex = document.createElement("div");
+    ex.className = "excerpt";
+    ex.textContent = item.content.trim().replace(/\s+/g, " ").slice(0, 280);
+    card.appendChild(ex);
   }
 
-  wrap.addEventListener("click", () => openModalForItem(item));
-
-  card.appendChild(body);
   wrap.appendChild(card);
+
+  // open modal on click
+  wrap.addEventListener("click", (e) => {
+    e.preventDefault();
+    openModalForItem(item);
+  });
+
   return wrap;
 }
