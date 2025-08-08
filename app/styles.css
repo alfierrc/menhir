@@ -195,18 +195,45 @@ header {
   white-space: pre-wrap;
 }
 
-/* For note modals: make left pane scrollable text */
-.modal-note-content {
-  padding: 20px;
-  overflow-y: auto;
-  font-size: 14px;
-  line-height: 1.55;
+/* Note variant: left pane is a reader, not a black image stage */
+.modal-left.note-left {
+  background: #fff;
   color: var(--ink);
+  display: block; /* ensure regular flow for a scroller container */
+  overflow: auto;
 }
 
-/* Optional: match markdown/body styling */
+/* Scrollable note content area */
+.modal-note-content {
+  padding: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Markdown polish */
 .modal-note-content .md p {
-  margin-bottom: 12px;
+  margin: 0 0 12px;
+}
+.modal-note-content .md h1,
+.modal-note-content .md h2,
+.modal-note-content .md h3 {
+  margin: 16px 0 8px;
+  line-height: 1.25;
+}
+.modal-note-content .md ul,
+.modal-note-content .md ol {
+  margin: 10px 0 10px 20px;
+}
+.modal-note-content .md code {
+  background: #f4f4f4;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+.modal-note-content .md pre {
+  background: #f6f6f6;
+  padding: 10px;
+  border-radius: 8px;
+  overflow: auto;
 }
 
 /* lock page scroll when modal open */
