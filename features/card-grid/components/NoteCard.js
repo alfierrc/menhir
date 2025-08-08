@@ -1,3 +1,7 @@
+import { createShell } from "../../modal/shell.js";
+import { MODAL_VIEWS } from "../../modal/registry.js";
+import { openModalForItem } from "../../modal/index.js";
+
 export function createNoteCard(item) {
   const wrap = document.createElement("div");
   wrap.className = "wrapper";
@@ -19,6 +23,8 @@ export function createNoteCard(item) {
     meta.textContent = item.content.slice(0, 120).trim();
     body.appendChild(meta);
   }
+
+  wrap.addEventListener("click", () => openModalForItem(item));
 
   card.appendChild(body);
   wrap.appendChild(card);

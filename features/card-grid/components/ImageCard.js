@@ -1,6 +1,11 @@
+import { createShell } from "../../modal/shell.js";
+import { MODAL_VIEWS } from "../../modal/registry.js";
+import { openModalForItem } from "../../modal/index.js";
+
 export function createImageCard(item) {
   const wrap = document.createElement("div");
   wrap.className = "wrapper";
+  wrap.style.cursor = "pointer"; // nice affordance
   wrap.dataset.item = JSON.stringify(item); // stash for click handler
 
   const card = document.createElement("article");
@@ -30,12 +35,7 @@ export function createImageCard(item) {
     });
   }
 
-  // click opens modal (delegate outside too if you prefer)
-  wrap.addEventListener("click", (e) => {
-    e.preventDefault();
-    const { openImageModal } = window.modalAPI || {};
-    if (openImageModal) openImageModal(item, window.api.getImagePath);
-  });
+  wrap.addEventListener("click", () => openModalForItem(item));
 
   return wrap;
 }

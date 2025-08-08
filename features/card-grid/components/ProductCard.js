@@ -1,3 +1,7 @@
+import { createShell } from "../../modal/shell.js";
+import { MODAL_VIEWS } from "../../modal/registry.js";
+import { openModalForItem } from "../../modal/index.js";
+
 export function createProductCard(item) {
   const wrap = document.createElement("div");
   wrap.className = "wrapper";
@@ -37,6 +41,8 @@ export function createProductCard(item) {
       })
       .catch(() => {});
   }
+
+  wrap.addEventListener("click", () => openModalForItem(item));
 
   return wrap;
 }
