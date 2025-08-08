@@ -49,28 +49,27 @@ window.addEventListener("DOMContentLoaded", async () => {
   const spinner = document.getElementById("spinner");
 
   try {
-    // 1) Load items
+    // turn on prelayout cluster
+    grid.classList.add("prelayout");
+
     const items = await window.api.loadVault();
     console.log("[renderer] items:", items.length);
 
-    // 2) Render cards (cards set img.src asynchronously)
     await renderGrid(grid, items);
-
-    // 3) Initial settle: wait for current images, THEN Masonry
     await waitForImages(grid, { timeout: 8000 });
 
-    // 4) Build Masonry
+    // turn off prelayout just before Masonry takes over
+    grid.classList.remove("prelayout");
+
     const masonry = new MiniMasonry({
       container: ".grid",
+      gutter: 16,
+      surroundingGutter: false,
     });
 
-    // 5) Hide spinner now that first layout is good
     if (spinner) spinner.setAttribute("aria-hidden", "true");
 
-    // 6) Ongoing reflow: if any image loads later, re-layout (debounced)
     const relayout = debounce(() => masonry.layout(), 120);
-
-    // Attach listeners at the grid level (capture) to catch all <img> loads
     grid.addEventListener(
       "load",
       (e) => {
