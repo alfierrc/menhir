@@ -1,4 +1,5 @@
 import { renderGrid } from "../features/card-grid/index.js";
+import { openImageModal } from "../features/modal/index.js";
 
 // tiny debounce
 function debounce(fn, ms = 100) {
@@ -40,6 +41,8 @@ function waitForImages(container, { timeout = 8000 } = {}) {
     });
   });
 }
+
+window.modalAPI = { openImageModal }; // simple global for now
 
 window.addEventListener("DOMContentLoaded", async () => {
   const grid = document.getElementById("grid");
