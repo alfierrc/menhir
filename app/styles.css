@@ -255,9 +255,9 @@ body.modal-open {
 
 /* Make tiles small and uniform during prelayout */
 .grid.prelayout .card {
-  width: 160px; /* tweak to taste */
-  border-radius: 10px;
-  transform: scale(0.92);
+  width: 250px; /* tweak to taste */
+  border-radius: 2px;
+  transform: scale(0.6);
   transition: transform 0.15s ease;
 }
 .grid.prelayout .card:hover {

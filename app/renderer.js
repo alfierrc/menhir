@@ -63,8 +63,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     const masonry = new MiniMasonry({
       container: ".grid",
-      gutter: 16,
-      surroundingGutter: false,
     });
 
     if (spinner) spinner.setAttribute("aria-hidden", "true");
