@@ -1,23 +1,17 @@
-import { renderGrid } from '../features/card-grid/index.js';
+import { renderGrid } from "../features/card-grid/index.js";
 
-window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener("DOMContentLoaded", async () => {
   try {
-    const grid = document.getElementById('grid');
-
-    // 1) Load items from the vault
+    const grid = document.getElementById("grid");
     const items = await window.api.loadVault();
-    console.log('[renderer] items:', items.length);
+    console.log("[renderer] items:", items.length);
 
-    // 2) Render cards into the grid
-    renderGrid(grid, items);
+    await renderGrid(grid, items); // wait for images so heights are final
 
-    // 3) Once cards are in the DOM, run MiniMasonry
-    // MiniMasonry is available globally because we load vendor/minimasonry.min.js in index.html
     new MiniMasonry({
-      container: '.grid',
+      container: ".grid",
     });
-
   } catch (e) {
-    console.error('[renderer] load failed', e);
+    console.error("[renderer] load failed", e);
   }
 });
