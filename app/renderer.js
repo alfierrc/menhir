@@ -59,9 +59,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     grid.classList.remove("prelayout");
 
-    const masonry = new MiniMasonry({
-      container: ".grid",
-    });
+    // const masonry = new MiniMasonry({
+    //   container: ".grid",
+    // });
 
     if (spinner) spinner.setAttribute("aria-hidden", "true");
 

@@ -19,28 +19,40 @@ header {
   border-bottom: 1px solid var(--rule);
 }
 .grid {
-  position: relative;
-  padding-top: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center; /* vertically centers when few tiles */
+  gap: 0px;
+  padding: 0px;
+  min-height: 60vh; /* so you see the cluster */
+  border-color: #111;
+  border-width: 1px;
 }
+
 .wrapper {
-  position: absolute;
-  max-width: 100%;
+  position: relative;
+  border: 1px solid var(--ink);
+  /* max-width: 100%; */
 } /* MiniMasonry requirement */
 /* ---- Card shell ---- */
 .card {
   background: var(--panel);
-  border: 1px solid var(--rule);
-  border-radius: 2px;
+  /* border: 1px solid var(--ink); */
+  border-radius: 0px;
   overflow: hidden; /* round the image corners */
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  /* box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); */
   transition: transform 0.12s ease, box-shadow 0.12s ease,
     border-color 0.12s ease;
+  width: 250px; /* tweak to taste */
+  /* transform: scale(0.6); */
+  transition: transform 0.15s ease;
 }
-.card:hover {
+/* .card:hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   border-color: #ddd;
-}
+} */
 /* image fills width, natural height */
 .card img {
   display: block;
