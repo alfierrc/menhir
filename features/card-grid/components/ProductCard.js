@@ -1,9 +1,10 @@
+import { createShell } from "../../modal/shell.js";
+import { MODAL_VIEWS } from "../../modal/registry.js";
 import { openModalForItem } from "../../modal/index.js";
 
-export function createNoteCard(item) {
+export function createProductCard(item) {
   const wrap = document.createElement("div");
   wrap.className = "wrapper";
-  wrap.style.cursor = "pointer";
 
   // inside createImageCard
   const card = document.createElement("article");
@@ -35,5 +36,17 @@ export function createNoteCard(item) {
   }
   wrap.appendChild(cap);
 
-  // async image src remains the same
+  // set image src asynchronously
+  if (item.image && window.api?.getImagePath) {
+    window.api
+      .getImagePath(item.folder, item.image)
+      .then((src) => {
+        img.src = src;
+      })
+      .catch(() => {});
+  }
+
+  wrap.addEventListener("click", () => openModalForItem(item));
+
+  return wrap;
 }
