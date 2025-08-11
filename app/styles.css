@@ -42,9 +42,8 @@ header {
   position: static;
   max-width: none;
   padding-top: 48px;
-  border-radius: 6px;
+  border-radius: 2px;
   padding: 10px;
-  transition: 0.2s ease-in-out;
 }
 
 .grid.catalog .wrapper:hover {
