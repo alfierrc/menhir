@@ -1,73 +1,180 @@
 import { renderGrid } from "../features/card-grid/index.js";
 
-// --- layout mode toggle ---
-const LAYOUT_MODE = "catalog"; // 'catalog' | 'masonry'
-
-// data caches
 let allItems = [];
 let filteredItems = [];
+let isAnimating = false; // <— block hover while animating
 
-// keep your debounce + waitForImages helpers if you have them
-// (assuming debounce + waitForImages are still globally available)
+function setHoverPreview(grid, filter) {
+  if (isAnimating) return; // ignore during animations
+  const cards = grid.querySelectorAll(".wrapper");
+  cards.forEach((card) => {
+    const t = card.dataset.type;
+    card.style.opacity = filter === "all" || t === filter ? "1" : "0.2";
+  });
+}
+
+function clearHoverPreview(grid) {
+  const cards = grid.querySelectorAll(".wrapper");
+  cards.forEach((card) => {
+    card.style.opacity = "1";
+  });
+}
+
+// --- FLIP helpers ---
+function capturePositions(gridEl) {
+  const map = new Map();
+  gridEl.querySelectorAll(".wrapper[data-key]").forEach((el) => {
+    map.set(el.dataset.key, el.getBoundingClientRect());
+  });
+  return map;
+}
+
+function animateFlip(gridEl, beforeRects) {
+  const wrappers = Array.from(gridEl.querySelectorAll(".wrapper[data-key]"));
+
+  // invert
+  wrappers.forEach((el) => {
+    const key = el.dataset.key;
+    const before = beforeRects.get(key);
+    if (!before) {
+      // new element: start from small+transparent
+      el.classList.add("is-entering");
+      el.style.opacity = "0";
+      el.style.transform = "scale(0.96)";
+      return;
+    }
+    const after = el.getBoundingClientRect();
+    const dx = before.left - after.left;
+    const dy = before.top - after.top;
+    if (dx || dy) {
+      el.style.transform = `translate(${dx}px, ${dy}px)`;
+    }
+  });
+
+  // play
+  requestAnimationFrame(() => {
+    wrappers.forEach((el) => {
+      if (el.classList.contains("is-entering")) {
+        // allow initial styles to apply, then reveal
+        requestAnimationFrame(() => {
+          el.style.transition = "transform 1000ms ease, opacity 200ms ease";
+          el.classList.remove("is-entering");
+          el.style.opacity = "1";
+          el.style.transform = "none";
+        });
+      } else {
+        el.style.transform = "none";
+      }
+    });
+  });
+}
 
 window.addEventListener("DOMContentLoaded", async () => {
   const grid = document.getElementById("grid");
   const spinner = document.getElementById("spinner");
-  const filtersEl = document.getElementById("filters"); // ✅ container for filter buttons
+  const filtersEl = document.getElementById("filters"); // your buttons container
 
   try {
-    // load + sort
+    // load + sort newest → oldest
     allItems = await window.api.loadVault();
     allItems.sort((a, b) => (b.sortTs || 0) - (a.sortTs || 0));
     filteredItems = [...allItems];
 
-    // toggle catalog class
-    if (LAYOUT_MODE === "catalog") grid.classList.add("catalog");
+    // catalog class (for your CSS)
+    grid.classList.add("catalog");
 
     // initial render
     await renderGrid(grid, filteredItems);
+    if (spinner) spinner.setAttribute("aria-hidden", "true");
 
-    if (LAYOUT_MODE === "masonry") {
-      await waitForImages(grid, { timeout: 8000 });
-      const masonry = new MiniMasonry({
-        container: ".grid",
+    // hover preview fade (optional; remove if you already did this elsewhere)
+    if (filtersEl) {
+      filtersEl.addEventListener("mouseover", (e) => {
+        if (!e.target.matches("button")) return;
+        const filter = e.target.getAttribute("data-filter");
+        setHoverPreview(grid, filter);
       });
-      const relayout = debounce(() => masonry.layout(), 120);
-      grid.addEventListener(
-        "load",
-        (e) => {
-          if (e.target?.tagName === "IMG") relayout();
-        },
-        true
-      );
+
+      filtersEl.addEventListener("mouseout", () => {
+        if (isAnimating) return; // keep stable during the flip
+        clearHoverPreview(grid);
+      });
     }
 
-    // ✅ filter button click handler
+    // click → filter with FLIP
     if (filtersEl) {
       filtersEl.addEventListener("click", async (e) => {
         if (!e.target.matches("button")) return;
-
         const filter = e.target.getAttribute("data-filter");
 
-        if (filter === "all") {
-          filteredItems = [...allItems];
-        } else {
-          filteredItems = allItems.filter((item) => item.type === filter);
-        }
+        // 🔒 Stop hover from changing opacity mid-animation
+        isAnimating = true;
+        clearHoverPreview(grid); // force all cards to 1 before measuring
+        grid.classList.add("animating"); // (you already use this in FLIP CSS)
 
+        // 1) capture BEFORE rects
+        const beforeRects = capturePositions(grid); // your helper
+
+        // 2) compute filtered
+        filteredItems =
+          filter === "all"
+            ? [...allItems]
+            : allItems.filter(
+                (it) => (it.type || "").toLowerCase() === filter.toLowerCase()
+              );
+
+        // 3) re-render (using your reconciler version of renderGrid if you added it)
         await renderGrid(grid, filteredItems);
 
-        if (LAYOUT_MODE === "masonry") {
-          await waitForImages(grid, { timeout: 8000 });
-          const masonry = new MiniMasonry({ container: ".grid" });
-          masonry.layout();
-        }
+        // 4) FLIP animate
+        // disable transitions first
+        grid.querySelectorAll(".wrapper").forEach((el) => {
+          el.style.transition = "none";
+        });
+        const afterRects = capturePositions(grid);
+        grid.querySelectorAll(".wrapper").forEach((el) => {
+          const key = el.dataset.key;
+          const before = beforeRects.get(key);
+          const after = afterRects.get(key);
+          if (before) {
+            const dx = before.left - after.left;
+            const dy = before.top - after.top;
+            el.style.transform = `translate(${dx}px, ${dy}px)`;
+            el.style.opacity = "1"; // ensure no residual .2 from hover
+          } else {
+            // entering
+            el.style.transform = "scale(0.96)";
+            el.style.opacity = "0";
+          }
+        });
+
+        // force reflow
+        // eslint-disable-next-line no-unused-expressions
+        grid.offsetHeight;
+
+        // play
+        grid.querySelectorAll(".wrapper").forEach((el) => {
+          el.style.transition = "transform 500ms ease, opacity 200ms ease";
+          el.style.transform = "none";
+          el.style.opacity = "1";
+        });
+
+        // 🔓 re-enable hover after animation ends
+        setTimeout(() => {
+          grid.querySelectorAll(".wrapper").forEach((el) => {
+            el.style.transition = "";
+          });
+          grid.classList.remove("animating");
+          isAnimating = false;
+        }, 320);
       });
     }
-
-    if (spinner) spinner.setAttribute("aria-hidden", "true");
   } catch (e) {
     console.error(e);
     if (spinner) spinner.setAttribute("aria-hidden", "true");
+    grid.insertAdjacentHTML(
+      "beforeend",
+      '<div class="empty">Could not load vault.</div>'
+    );
   }
 });

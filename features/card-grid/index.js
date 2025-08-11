@@ -2,34 +2,107 @@ import { createImageCard } from "./components/ImageCard.js";
 import { createProductCard } from "./components/ProductCard.js";
 import { createNoteCard } from "./components/NoteCard.js";
 
-export function renderGrid(container, items) {
-  container.innerHTML = "";
-  const fr = document.createDocumentFragment();
+const buildByType = {
+  image: createImageCard,
+  product: createProductCard,
+  note: createNoteCard,
+};
 
-  items.forEach((item) => {
-    let node;
-    if (item.type === "image") node = createImageCard(item);
-    else if (item.type === "product") node = createProductCard(item);
-    else node = createNoteCard(item);
-    fr.appendChild(node);
+function getKey(item) {
+  const t = (item.type || "unknown").toLowerCase();
+  const s = item.slug || item.title || "";
+  return `${t}:${s}`;
+}
+
+function captureRects(grid) {
+  const map = new Map();
+  grid.querySelectorAll(".wrapper[data-key]").forEach((el) => {
+    map.set(el.dataset.key, el.getBoundingClientRect());
+  });
+  return map;
+}
+
+function ensureNodeForItem(item) {
+  const build = buildByType[item.type] || createNoteCard;
+  const node = build(item); // returns .wrapper
+  node.dataset.key = node.dataset.key || getKey(item);
+  node.dataset.type = node.dataset.type || (item.type || "").toLowerCase();
+  return node;
+}
+
+function playFlipSimple(grid, beforeRects) {
+  const nodes = Array.from(grid.querySelectorAll(".wrapper[data-key]"));
+
+  // Invert: place shared nodes back to their old position
+  nodes.forEach((el) => {
+    const prev = beforeRects.get(el.dataset.key);
+    if (!prev) return; // new node handled separately
+    const now = el.getBoundingClientRect();
+    const dx = prev.left - now.left;
+    const dy = prev.top - now.top;
+    if (dx || dy) el.style.transform = `translate(${dx}px, ${dy}px)`;
   });
 
-  container.appendChild(fr);
+  // Force layout so transforms take effect
+  // eslint-disable-next-line no-unused-expressions
+  grid.offsetHeight;
 
-  // Return a promise that resolves when all images in the grid have settled
-  return new Promise((resolve) => {
-    // wait a frame for <img> elements to be in the DOM
-    requestAnimationFrame(() => {
-      const imgs = Array.from(container.querySelectorAll("img"));
-      if (imgs.length === 0) return resolve(); // nothing to wait for
-      let remaining = imgs.length;
-      const done = () => {
-        if (--remaining <= 0) resolve();
-      };
-      imgs.forEach((img) => {
-        if (img.complete) return done();
-        img.onload = img.onerror = done;
-      });
+  // Play: existing nodes animate position only; new ones also fade in
+  nodes.forEach((el) => {
+    const isEntering = el.classList.contains("is-entering");
+    el.style.transition = isEntering
+      ? "transform 280ms ease, opacity 200ms ease"
+      : "transform 280ms ease";
+    el.style.transform = "none";
+    if (isEntering) el.style.opacity = "1";
+  });
+
+  // Cleanup inline styles
+  setTimeout(() => {
+    nodes.forEach((el) => {
+      el.style.transition = "";
+      el.classList.remove("is-entering");
     });
+  }, 320);
+}
+
+/**
+ * Reconcile grid to `items` order.
+ * - Reuse existing nodes by key
+ * - New nodes fade/scale in
+ * - Removed nodes are just removed (no exit anim)
+ * - Existing nodes glide to new positions (FLIP)
+ */
+export async function renderGrid(grid, items) {
+  const beforeRects = captureRects(grid);
+
+  // Index current nodes
+  const current = new Map();
+  grid.querySelectorAll(".wrapper[data-key]").forEach((el) => {
+    current.set(el.dataset.key, el);
   });
+
+  // Build fragment in desired order, reusing nodes
+  const frag = document.createDocumentFragment();
+  for (const item of items) {
+    const key = getKey(item);
+    let el = current.get(key);
+    if (el) {
+      el.style.transition = "none"; // avoid accidental transitions
+    } else {
+      el = ensureNodeForItem(item);
+      // entering state
+      el.style.opacity = "0";
+      el.style.transform = "scale(0.96)";
+      el.classList.add("is-entering");
+    }
+    frag.appendChild(el);
+  }
+
+  // Swap DOM
+  grid.innerHTML = "";
+  grid.appendChild(frag);
+
+  // FLIP position animation + reveal enters
+  playFlipSimple(grid, beforeRects);
 }

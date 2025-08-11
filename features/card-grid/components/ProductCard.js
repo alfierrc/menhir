@@ -3,6 +3,10 @@ import { openModalForItem } from "../../modal/index.js";
 export function createProductCard(item) {
   // define wrapper
   const wrap = document.createElement("div");
+  wrap.dataset.key = `${(item.type || "unknown").toLowerCase()}:${
+    item.slug || item.title || Math.random().toString(36).slice(2)
+  }`;
+  wrap.dataset.type = (item.type || "").toLowerCase();
   wrap.className = "wrapper";
 
   // cursor hover
@@ -61,6 +65,7 @@ export function createProductCard(item) {
 
   // listen for click
   wrap.addEventListener("click", () => openModalForItem(item));
+  wrap.dataset.type = "product";
 
   return wrap;
 }

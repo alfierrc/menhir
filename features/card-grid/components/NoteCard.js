@@ -3,6 +3,10 @@ import { openModalForItem } from "../../modal/index.js";
 export function createNoteCard(item) {
   // define wrapper and card
   const wrap = document.createElement("div");
+  wrap.dataset.key = `${(item.type || "unknown").toLowerCase()}:${
+    item.slug || item.title || Math.random().toString(36).slice(2)
+  }`;
+  wrap.dataset.type = (item.type || "").toLowerCase();
   wrap.className = "wrapper";
   wrap.style.cursor = "pointer";
   const card = document.createElement("article");
@@ -60,6 +64,7 @@ export function createNoteCard(item) {
     e.preventDefault();
     openModalForItem(item);
   });
+  wrap.dataset.type = "note";
 
   return wrap;
 }
