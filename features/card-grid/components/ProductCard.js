@@ -5,6 +5,8 @@ import { openModalForItem } from "../../modal/index.js";
 export function createProductCard(item) {
   const wrap = document.createElement("div");
   wrap.className = "wrapper";
+  wrap.style.cursor = "pointer"; 
+  wrap.dataset.item = JSON.stringify(item); // stash for click handler
 
   // inside createImageCard
   const card = document.createElement("article");
