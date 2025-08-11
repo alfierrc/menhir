@@ -3,16 +3,27 @@ import { MODAL_VIEWS } from "../../modal/registry.js";
 import { openModalForItem } from "../../modal/index.js";
 
 export function createProductCard(item) {
+  // define wrapper
   const wrap = document.createElement("div");
   wrap.className = "wrapper";
-  wrap.style.cursor = "pointer"; 
+
+  // cursor hover
+  wrap.style.cursor = "pointer"; // nice affordance
   wrap.dataset.item = JSON.stringify(item); // stash for click handler
 
-  // inside createImageCard
+  // create and append meta
+  const logMeta = document.createElement("div");
+  logMeta.className = "log-meta";
+  const title = document.createElement("div");
+  title.textContent = item.title || item.slug;
+  const date = document.createElement("div");
+  date.textContent = item.date;
+  logMeta.append(title, date);
+  wrap.appendChild(logMeta);
+
+  // create image card
   const card = document.createElement("article");
   card.className = "card";
-
-  // ensure we have a media wrapper in case it's not there yet
   const media = document.createElement("div");
   media.className = "card-media";
   const img = document.createElement("img");
@@ -21,33 +32,20 @@ export function createProductCard(item) {
   card.appendChild(media);
   wrap.appendChild(card);
 
-  // caption
-  const cap = document.createElement("div");
-  cap.className = "card-caption";
-  const title = document.createElement("div");
-  title.className = "card-title";
-  title.textContent = item.title || item.slug;
-  cap.appendChild(title);
-
-  // Use a sensible meta: tags, author, source, etc.
-  if (item.author || (item.tags && item.tags.length)) {
-    const meta = document.createElement("div");
-    meta.className = "card-meta";
-    meta.textContent = item.author || item.tags.join(", ");
-    cap.appendChild(meta);
-  }
-  wrap.appendChild(cap);
-
-  // set image src asynchronously
   if (item.image && window.api?.getImagePath) {
-    window.api
-      .getImagePath(item.folder, item.image)
-      .then((src) => {
-        img.src = src;
-      })
-      .catch(() => {});
+    const markLoaded = () => img.classList.add("is-loaded");
+    img.onload = markLoaded;
+    img.onerror = markLoaded;
+    window.api.getImagePath(item.folder, item.image).then((src) => {
+      img.src = src;
+      if (img.complete)
+        "decode" in img
+          ? img.decode().then(markLoaded).catch(markLoaded)
+          : markLoaded();
+    });
   }
 
+  // listen for click
   wrap.addEventListener("click", () => openModalForItem(item));
 
   return wrap;

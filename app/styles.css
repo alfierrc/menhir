@@ -1,3 +1,8 @@
+@font-face {
+  font-family: necto;
+  src: url("../public/fonts/NectoMono-Regular.woff2") format("woff2");
+}
+
 :root {
   --bg: #f6f6f6;
   --panel: #fff;
@@ -25,9 +30,9 @@ header {
   display: grid;
   grid-template-columns: repeat(
     auto-fill,
-    minmax(250px, 1fr)
+    minmax(150px, 1fr)
   ); /* adjust tile width */
-  gap: 24px; /* inter-tile gap */
+  gap: 6px; /* inter-tile gap */
   padding: 16px 16px 32px;
   align-items: end;
 }
@@ -36,6 +41,16 @@ header {
 .grid.catalog .wrapper {
   position: static;
   max-width: none;
+  padding-top: 48px;
+}
+
+.grid .log-meta {
+  /* font-family: "necto"; */
+  font-size: 10px;
+  line-height: 1.5;
+  margin: 0 0 2px;
+  color: var(--ink);
+  padding-bottom: 5px;
 }
 
 /* The tile itself becomes just the cover image frame; no shadow/border */
