@@ -1,20 +1,30 @@
 import { openModalForItem } from "../../modal/index.js";
 
 export function createNoteCard(item) {
+  // define wrapper and card
   const wrap = document.createElement("div");
   wrap.className = "wrapper";
   wrap.style.cursor = "pointer";
-
   const card = document.createElement("article");
-  card.className = "card note-card"; // extra class for styling
+  card.className = "card note-card";
+
+  // create and append meta
+  const logMeta = document.createElement("div");
+  logMeta.className = "log-meta";
+  const title = document.createElement("div");
+  title.textContent = item.title || item.slug;
+  const date = document.createElement("div");
+  date.textContent = item.date;
+  logMeta.append(title, date);
+  wrap.appendChild(logMeta);
 
   // Square media container
   const media = document.createElement("div");
   media.className = "card-media";
   media.style.display = "grid";
   media.style.placeItems = "center";
-  media.style.aspectRatio = "1 / 1"; // force square
-  media.style.background = "#f5f5f5";
+  media.style.aspectRatio = "1 / 1";
+  media.style.background = "#ffffffff";
   media.style.padding = "12px";
   media.style.overflow = "hidden";
 
@@ -44,24 +54,6 @@ export function createNoteCard(item) {
   media.appendChild(excerpt);
   card.appendChild(media);
   wrap.appendChild(card);
-
-  // caption (title + tags)
-  const cap = document.createElement("div");
-  cap.className = "card-caption";
-
-  const title = document.createElement("div");
-  title.className = "card-title";
-  title.textContent = item.title || item.slug || "Note";
-  cap.appendChild(title);
-
-  if (item.tags && item.tags.length) {
-    const meta = document.createElement("div");
-    meta.className = "card-meta";
-    meta.textContent = item.tags.join(", ");
-    cap.appendChild(meta);
-  }
-
-  wrap.appendChild(cap);
 
   // open modal on click
   wrap.addEventListener("click", (e) => {
