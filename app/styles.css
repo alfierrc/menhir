@@ -44,13 +44,24 @@ header {
   padding-top: 48px;
 }
 
+.item-header {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  padding-bottom: 10px;
+}
+
 .grid .log-meta {
   /* font-family: "necto"; */
   font-size: 10px;
   line-height: 1.5;
   margin: 0 0 2px;
   color: var(--ink);
-  padding-bottom: 5px;
+  grid-column: 1 / 9;
+}
+
+.grid .type-icon {
+  grid-column: 9 / 11;
 }
 
 /* The tile itself becomes just the cover image frame; no shadow/border */

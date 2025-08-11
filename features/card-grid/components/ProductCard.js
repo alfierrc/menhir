@@ -1,5 +1,3 @@
-import { createShell } from "../../modal/shell.js";
-import { MODAL_VIEWS } from "../../modal/registry.js";
 import { openModalForItem } from "../../modal/index.js";
 
 export function createProductCard(item) {
@@ -11,7 +9,11 @@ export function createProductCard(item) {
   wrap.style.cursor = "pointer"; // nice affordance
   wrap.dataset.item = JSON.stringify(item); // stash for click handler
 
-  // create and append meta
+  // creat header
+  const header = document.createElement("div");
+  header.className = "item-header";
+
+  // create and append meta to header
   const logMeta = document.createElement("div");
   logMeta.className = "log-meta";
   const title = document.createElement("div");
@@ -19,7 +21,19 @@ export function createProductCard(item) {
   const date = document.createElement("div");
   date.textContent = item.date;
   logMeta.append(title, date);
-  wrap.appendChild(logMeta);
+  header.appendChild(logMeta);
+
+  // create and append type icon to header
+  // const type = document.createElement("div");
+  // type.className = "type-icon";
+  // type.style.placeItems = "center";
+  // type.style.aspectRatio = "1 / 1";
+  // type.style.background = "#e75d07ff";
+  // type.style.overflow = "hidden";
+  // type.style.borderRadius = "100%";
+  // header.appendChild(type);
+
+  wrap.appendChild(header);
 
   // create image card
   const card = document.createElement("article");
