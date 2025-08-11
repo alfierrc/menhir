@@ -30,7 +30,7 @@ header {
   display: grid;
   grid-template-columns: repeat(
     auto-fill,
-    minmax(150px, 1fr)
+    minmax(200px, 1fr)
   ); /* adjust tile width */
   gap: 6px; /* inter-tile gap */
   padding: 16px 16px 32px;
@@ -42,6 +42,15 @@ header {
   position: static;
   max-width: none;
   padding-top: 48px;
+  border-radius: 6px;
+  padding: 10px;
+  transition: 0.2s ease-in-out;
+}
+
+.grid.catalog .wrapper:hover {
+  outline: solid 1px var(--ink-dim);
+  /* box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  scale: 101%; */
 }
 
 .item-header {
@@ -57,7 +66,7 @@ header {
   line-height: 1.5;
   margin: 0 0 2px;
   color: var(--ink);
-  grid-column: 1 / 9;
+  grid-column: 1 /11;
 }
 
 .grid .type-icon {
@@ -120,10 +129,10 @@ header {
 }
 
 /* Optional hover: subtle lift of cover only */
-.grid.catalog .card-media:hover {
+/* .grid.catalog .card-media:hover {
   transform: translateY(-1px);
   transition: transform 0.12s ease;
-}
+} */
 
 .title {
   margin: 8px 0 0;
