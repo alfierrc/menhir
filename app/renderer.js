@@ -93,6 +93,60 @@ window.addEventListener("DOMContentLoaded", async () => {
   const spinner = document.getElementById("spinner");
   const filtersEl = document.getElementById("filters"); // your buttons container
 
+  const themeToggle = document.getElementById("themeToggle");
+
+  function applyTheme(theme) {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.setAttribute("data-theme", "dark");
+    } else if (theme === "light") {
+      root.setAttribute("data-theme", "light");
+    } else {
+      root.removeAttribute("data-theme"); // fall back to system
+    }
+    // update button label/state
+    if (themeToggle) {
+      const isDark =
+        theme === "dark" ||
+        (!theme &&
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches);
+      themeToggle.textContent = isDark ? "Light" : "Dark";
+      themeToggle.setAttribute("aria-pressed", String(isDark));
+    }
+  }
+
+  // initial theme: saved -> system
+  const saved = localStorage.getItem("menhir.theme"); // "dark" | "light" | null
+  applyTheme(saved);
+
+  // react to system changes only when not explicitly set
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    mq.addEventListener?.("change", () => {
+      if (!localStorage.getItem("menhir.theme")) applyTheme(null);
+    });
+  }
+
+  // toggle click handler
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme"); // "dark" | "light" | null
+      let next;
+      if (!current) {
+        // currently following system — flip to the opposite explicitly
+        const systemDark =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+        next = systemDark ? "light" : "dark";
+      } else {
+        next = current === "dark" ? "light" : "dark";
+      }
+      localStorage.setItem("menhir.theme", next);
+      applyTheme(next);
+    });
+  }
+
   try {
     // load + sort newest → oldest
     allItems = await window.api.loadVault();
