@@ -3,6 +3,26 @@
   src: url("../public/fonts/NectoMono-Regular.woff2") format("woff2");
 }
 
+/* System preference as default hint */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1011;
+    --panel: #151617;
+    --ink: #e7e7ea;
+    --ink-dim: #a2a3a9;
+    --rule: #2a2b2d;
+  }
+}
+
+/* Explicit theme override */
+:root[data-theme="dark"] {
+  --bg: #0f1011;
+  --panel: #151617;
+  --ink: #e7e7ea;
+  --ink-dim: #a2a3a9;
+  --rule: #2a2b2d;
+}
+
 :root {
   --bg: #f6f6f6;
   --panel: #fff;
@@ -29,7 +49,7 @@ header {
 /* smooth position/opacity animations for catalog grid */
 
 .filters button {
-  background-color: rgba(255, 255, 255, 0);
+  color: var(--ink);
   border-radius: 2px;
   border: none;
   padding: 6px;
@@ -38,9 +58,9 @@ header {
 }
 
 .filters button:hover {
-  background-color: #606060;
+  background-color: var(--ink);
   cursor: pointer;
-  color: white;
+  color: var(--panel);
 }
 
 .filters {
@@ -125,7 +145,7 @@ header {
 }
 
 .grid.catalog .card-media {
-  background: #f2f2f2;
+  background: var(--panel);
   border: 1px solid var(--rule);
   border-radius: 0px;
   overflow: hidden;
@@ -197,7 +217,7 @@ header {
 .modal {
   position: absolute;
   inset: 100px;
-  background: #fff;
+  background: var(--panel);
   border-radius: 2px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   display: grid;
@@ -229,7 +249,7 @@ header {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  background: #fff;
+  background: var(--panel);
 }
 .modal-header {
   display: flex;
@@ -247,7 +267,7 @@ header {
 }
 .modal-close {
   border: 1px solid var(--rule);
-  background: #fff;
+  background: var(--panel);
   border-radius: 999px;
   width: 28px;
   height: 28px;
@@ -350,7 +370,7 @@ body.modal-open {
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.65);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
   backdrop-filter: blur(2px);
   z-index: 999;
 }
