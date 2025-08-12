@@ -4,19 +4,38 @@ let allItems = [];
 let filteredItems = [];
 let isAnimating = false; // <— block hover while animating
 
+// at top of renderer.js (near isAnimating)
+let currentFilter = "all";
+
+// helpers (keep your versions; add the transform helpers)
 function setHoverPreview(grid, filter) {
-  if (isAnimating) return; // ignore during animations
-  const cards = grid.querySelectorAll(".wrapper");
-  cards.forEach((card) => {
+  if (isAnimating) return;
+  grid.querySelectorAll(".wrapper").forEach((card) => {
     const t = card.dataset.type;
     card.style.opacity = filter === "all" || t === filter ? "1" : "0.2";
   });
 }
 
 function clearHoverPreview(grid) {
-  const cards = grid.querySelectorAll(".wrapper");
-  cards.forEach((card) => {
+  grid.querySelectorAll(".wrapper").forEach((card) => {
     card.style.opacity = "1";
+  });
+}
+
+function applyHoverScale(grid) {
+  if (isAnimating) return;
+  grid.querySelectorAll(".wrapper").forEach((card) => {
+    card.style.transition = (card.style.transition || "").includes("transform")
+      ? card.style.transition
+      : "transform 120ms ease";
+    card.style.transform = "scale(0.98)";
+  });
+}
+
+function clearHoverScale(grid) {
+  grid.querySelectorAll(".wrapper").forEach((card) => {
+    // only clear if not in the middle of a FLIP
+    if (!isAnimating) card.style.transform = "none";
   });
 }
 
@@ -91,13 +110,26 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (filtersEl) {
       filtersEl.addEventListener("mouseover", (e) => {
         if (!e.target.matches("button")) return;
-        const filter = e.target.getAttribute("data-filter");
-        setHoverPreview(grid, filter);
+        if (isAnimating) return;
+        const hoverFilter = e.target.getAttribute("data-filter");
+        if (hoverFilter === currentFilter) return;
+
+        if (currentFilter === "all") {
+          // classic preview: dim non-matching
+          setHoverPreview(grid, hoverFilter);
+        } else {
+          // when a specific filter is active, just scale everything slightly
+          applyHoverScale(grid);
+        }
       });
 
       filtersEl.addEventListener("mouseout", () => {
-        if (isAnimating) return; // keep stable during the flip
-        clearHoverPreview(grid);
+        if (isAnimating) return;
+        if (currentFilter === "all") {
+          clearHoverPreview(grid);
+        } else {
+          clearHoverScale(grid);
+        }
       });
     }
 
@@ -107,9 +139,11 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (!e.target.matches("button")) return;
         const filter = e.target.getAttribute("data-filter");
 
-        // 🔒 Stop hover from changing opacity mid-animation
+        currentFilter = filter; // <-- track active filter
         isAnimating = true;
-        clearHoverPreview(grid); // force all cards to 1 before measuring
+        clearHoverPreview(grid);
+        clearHoverScale(grid);
+
         grid.classList.add("animating"); // (you already use this in FLIP CSS)
 
         // 1) capture BEFORE rects
