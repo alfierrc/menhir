@@ -235,7 +235,7 @@ header {
 
 /* left: media */
 .modal-left {
-  background: var(--ink);
+  background: #171716;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -319,7 +319,7 @@ header {
 
 /* Note variant: left pane is a reader, not a black image stage */
 .modal-left.note-left {
-  background: #fff;
+  background: var(--panel);
   color: var(--ink);
   display: block; /* ensure regular flow for a scroller container */
   overflow: auto;
