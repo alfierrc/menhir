@@ -1,5 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
+const fs = require("fs");
+const matter = require("gray-matter");
 const { pathToFileURL } = require("url");
 const { scanVault } = require("./lib/vaultReader");
 
