@@ -10,6 +10,10 @@ const { contextBridge, ipcRenderer } = require("electron");
       ipcRenderer.invoke("get-image-path", { folder, filename }),
     saveItem: (type, slug, updates) =>
       ipcRenderer.invoke("save-item", { type, slug, updates }),
+    onItemUpdated: (cb) => {
+      // deliver normalized item objects from main
+      ipcRenderer.on("vault:item-updated", (_e, item) => cb(item));
+    },
   });
 
   globalThis.__preloadDone = true;
