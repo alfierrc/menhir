@@ -461,3 +461,15 @@ body.modal-open {
   color: #333;
   cursor: default;
 } */
+
+.save-status {
+  font-size: 11px;
+  color: var(--ink-dim);
+  margin-left: 8px;
+}
+.save-status.is-saving {
+  opacity: 0.8;
+}
+.save-status.is-saved {
+  color: var(--ink);
+}
