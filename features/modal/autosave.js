@@ -27,7 +27,9 @@ export function makeAutosaver({ item, statusEl }) {
   const doSave = async (updates) => {
     try {
       showSaving();
-      await window.api.saveItem(item.type, item.slug, updates);
+      const res = await window.api.saveItem(item.type, item.slug, updates);
+      // Optimistically reflect the change in the local item reference
+      if (res?.item) Object.assign(item, res.item);
       showSaved();
     } catch (e) {
       console.error("[autosave] failed", e);
