@@ -160,6 +160,36 @@ window.addEventListener("DOMContentLoaded", async () => {
     await renderGrid(grid, filteredItems);
     if (spinner) spinner.setAttribute("aria-hidden", "true");
 
+    // 🔁 Live update when any item is saved
+    if (window.api?.onItemUpdated) {
+      window.api.onItemUpdated((fresh) => {
+        // Merge into allItems by slug+folder (stable identity in your app)
+        const match = (it) =>
+          it.slug === fresh.slug &&
+          (it.folder || it.type) === (fresh.folder || fresh.type);
+
+        const idx = allItems.findIndex(match);
+        if (idx >= 0) {
+          allItems[idx] = { ...allItems[idx], ...fresh };
+        } else {
+          allItems.unshift(fresh); // new item? unlikely from autosave, but safe
+        }
+
+        // Recompute the filtered view using the active filter
+        const active = (currentFilter || "all").toLowerCase();
+        filteredItems =
+          active === "all"
+            ? [...allItems]
+            : allItems.filter((it) => (it.type || "").toLowerCase() === active);
+
+        // Keep your newest → oldest ordering
+        filteredItems.sort((a, b) => (b.sortTs || 0) - (a.sortTs || 0));
+
+        // Re-render grid (renderGrid preserves/flips nodes smoothly)
+        renderGrid(grid, filteredItems);
+      });
+    }
+
     // hover preview fade (optional; remove if you already did this elsewhere)
     if (filtersEl) {
       filtersEl.addEventListener("mouseover", (e) => {
