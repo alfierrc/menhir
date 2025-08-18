@@ -3,6 +3,10 @@ import { openModalForItem } from "../../modal/index.js";
 export function createNoteCard(item) {
   // define wrapper and card
   const wrap = document.createElement("div");
+  // stash the item so the grid updater can keep this fresh via dataset.item
+  try {
+    wrap.dataset.item = JSON.stringify(item);
+  } catch {}
   wrap.dataset.key = `${(item.type || "unknown").toLowerCase()}:${
     item.slug || item.title || Math.random().toString(36).slice(2)
   }`;
@@ -62,7 +66,13 @@ export function createNoteCard(item) {
   // open modal on click
   wrap.addEventListener("click", (e) => {
     e.preventDefault();
-    openModalForItem(item);
+    // prefer the freshest item stored on the node by the grid updater
+    try {
+      const latest = wrap.dataset.item ? JSON.parse(wrap.dataset.item) : item;
+      openModalForItem(latest);
+    } catch {
+      openModalForItem(item);
+    }
   });
   wrap.dataset.type = "note";
 
