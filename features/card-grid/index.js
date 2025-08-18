@@ -30,6 +30,36 @@ function ensureNodeForItem(item) {
   return node;
 }
 
+function updateNodeForItem(node, item) {
+  // refresh header title/date if they're present on the card
+  const meta = node.querySelector(".log-meta");
+  if (meta && meta.children && meta.children.length >= 2) {
+    const titleEl = meta.children[0];
+    const dateEl = meta.children[1];
+    if (titleEl) titleEl.textContent = item.title || item.slug || "";
+    if (dateEl) dateEl.textContent = item.date || "";
+  }
+
+  // refresh the dataset so click handlers can read the latest item if needed
+  try {
+    node.dataset.item = JSON.stringify(item);
+  } catch {}
+
+  // If this is a NOTE card, recompute the excerpt text
+  if ((item.type || "").toLowerCase() === "note") {
+    const ex = node.querySelector(".note-excerpt");
+    if (ex) {
+      const raw = (item.content || "").replace(/[#*_>\-]/g, "").trim();
+      if (raw.length > 0) {
+        const words = raw.split(/\s+/).slice(0, 40).join(" ");
+        ex.textContent = words + "…";
+      } else {
+        ex.textContent = item.title || item.slug || "Note";
+      }
+    }
+  }
+}
+
 function playFlipSimple(grid, beforeRects) {
   const nodes = Array.from(grid.querySelectorAll(".wrapper[data-key]"));
 
@@ -88,7 +118,9 @@ export async function renderGrid(grid, items) {
     const key = getKey(item);
     let el = current.get(key);
     if (el) {
-      el.style.transition = "none"; // avoid accidental transitions
+      // reusing an existing node; update its inner DOM to reflect the new data
+      el.style.transition = "none";
+      updateNodeForItem(el, item);
     } else {
       el = ensureNodeForItem(item);
       // entering state
