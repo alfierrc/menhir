@@ -26,10 +26,27 @@ export function makeAutosaver({ item, statusEl }) {
 
   const doSave = async (updates) => {
     try {
+      // show immediate feedback while the save is in-flight
       showSaving();
-      const res = await window.api.saveItem(item.type, item.slug, updates);
-      // Optimistically reflect the change in the local item reference
-      if (res?.item) Object.assign(item, res.item);
+
+      // call the existing IPC to write to disk
+      await window.api.saveItem(item.type, item.slug, updates);
+
+      // mirror the saved fields into the in-modal item so everything stays in sync
+      Object.assign(item, updates);
+
+      // broadcast a lightweight local event so the grid can update without a full reload
+      window.dispatchEvent(
+        new CustomEvent("menhir:item-updated", {
+          detail: {
+            folder: item.folder || item.type, // cards use folder+slug as stable identity
+            slug: item.slug,
+            updates,
+          },
+        })
+      );
+
+      // show the "Saved" tick
       showSaved();
     } catch (e) {
       console.error("[autosave] failed", e);
