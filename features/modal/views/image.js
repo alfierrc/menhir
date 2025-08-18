@@ -1,58 +1,103 @@
+import { makeAutosaver } from "../autosave.js";
+
 export function renderImageView({ item, slots }) {
-  // LEFT: image (contained, no scroll)
+  // LEFT: image as-is
   if (item.image) {
     const img = document.createElement("img");
     img.style.maxWidth = "100%";
     img.style.maxHeight = "100%";
     img.style.objectFit = "contain";
     slots.left.appendChild(img);
-    window.api
-      .getImagePath(item.folder, item.image)
-      .then((src) => {
-        img.src = src;
-        if (img.decode) img.decode().catch(() => {});
-      })
-      .catch(() => {});
+    window.api.getImagePath(item.folder, item.image).then((src) => {
+      img.src = src;
+    });
   }
 
-  // HEADER: title text
-  slots.header.textContent = item.title || item.slug || "Untitled";
+  const autosave = makeAutosaver({ item, statusEl: slots.status });
 
-  // FRONTMATTER (key-values), skipping internal fields
-  const skip = new Set(["slug", "folder", "type", "content", "image"]);
-  const entries = Object.entries(item).filter(
-    ([k, v]) => !skip.has(k) && v != null && v !== ""
+  // HEADER title (editable)
+  const titleInput = document.createElement("input");
+  titleInput.type = "text";
+  titleInput.value = item.title || item.slug || "Untitled";
+  titleInput.className = "modal-title-input";
+  Object.assign(titleInput.style, {
+    width: "100%",
+    font: "inherit",
+    border: "none",
+    background: "transparent",
+    color: "var(--ink)",
+    outline: "none",
+  });
+  titleInput.addEventListener("input", () =>
+    autosave({ title: titleInput.value })
   );
-  if (entries.length) {
-    const kvWrap = document.createElement("div");
-    kvWrap.className = "modal-section modal-kv";
-    for (const [k, v] of entries) {
-      const kEl = document.createElement("div");
-      kEl.className = "k";
-      kEl.textContent = k;
-      const vEl = document.createElement("div");
-      vEl.className = "v";
-      let val = v;
-      if (Array.isArray(v)) val = v.join(", ");
-      else if (typeof v === "object") val = JSON.stringify(v);
-      vEl.textContent = String(val);
-      kvWrap.appendChild(kEl);
-      kvWrap.appendChild(vEl);
-    }
-    slots.body.appendChild(kvWrap);
-  }
+  slots.header.innerHTML = "";
+  slots.header.appendChild(titleInput);
 
-  // NOTES (plain text for now; we can switch to markdown renderer later)
-  if (item.content && item.content.trim()) {
-    const notes = document.createElement("div");
-    notes.className = "modal-section modal-notes";
-    const h = document.createElement("h3");
-    h.textContent = "Notes";
-    const body = document.createElement("div");
-    body.className = "body";
-    body.textContent = item.content.trim(); // safe plaintext
-    notes.appendChild(h);
-    notes.appendChild(body);
-    slots.body.appendChild(notes);
-  }
+  // FRONTMATTER section (editable tags + readonly others)
+  const kv = document.createElement("div");
+  kv.className = "modal-section modal-kv";
+
+  const kTags = document.createElement("div");
+  kTags.className = "k";
+  kTags.textContent = "tags";
+  const vTags = document.createElement("input");
+  vTags.type = "text";
+  vTags.className = "v";
+  vTags.value = Array.isArray(item.tags)
+    ? item.tags.join(", ")
+    : item.tags || "";
+  Object.assign(vTags.style, {
+    width: "100%",
+    border: "1px solid var(--rule)",
+    borderRadius: "4px",
+    padding: "6px 8px",
+  });
+  vTags.addEventListener("input", () => autosave({ tags: vTags.value }));
+  kv.appendChild(kTags);
+  kv.appendChild(vTags);
+
+  const skip = new Set([
+    "slug",
+    "folder",
+    "type",
+    "content",
+    "image",
+    "title",
+    "tags",
+    "sortTs",
+    "date",
+  ]);
+  Object.entries(item).forEach(([k, v]) => {
+    if (skip.has(k) || v == null || v === "") return;
+    const kEl = document.createElement("div");
+    kEl.className = "k";
+    kEl.textContent = k;
+    const vEl = document.createElement("div");
+    vEl.className = "v";
+    vEl.textContent = Array.isArray(v) ? v.join(", ") : String(v);
+    kv.appendChild(kEl);
+    kv.appendChild(vEl);
+  });
+  slots.body.appendChild(kv);
+
+  // NOTES (editable textarea)
+  const notes = document.createElement("div");
+  notes.className = "modal-section modal-notes";
+  const h = document.createElement("h3");
+  h.textContent = "Notes";
+  const ta = document.createElement("textarea");
+  ta.value = item.content || "";
+  Object.assign(ta.style, {
+    width: "100%",
+    minHeight: "140px",
+    border: "1px solid var(--rule)",
+    borderRadius: "6px",
+    padding: "8px 10px",
+    fontFamily: "inherit",
+  });
+  ta.addEventListener("input", () => autosave({ content: ta.value }));
+  notes.appendChild(h);
+  notes.appendChild(ta);
+  slots.body.appendChild(notes);
 }
