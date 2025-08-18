@@ -77,3 +77,19 @@ export function createShell() {
     close,
   };
 }
+
+document.addEventListener("keydown", (e) => {
+  const isSave = e.key.toLowerCase() === "s" && (e.metaKey || e.ctrlKey);
+  if (isSave) {
+    e.preventDefault();
+    if (status) {
+      status.textContent = "Saved";
+      status.classList.remove("is-saving");
+      status.classList.add("is-saved");
+      setTimeout(() => {
+        status.textContent = "";
+        status.classList.remove("is-saved");
+      }, 900);
+    }
+  }
+});
