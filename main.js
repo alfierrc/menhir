@@ -38,10 +38,9 @@ ipcMain.handle("get-image-path", (_e, { folder, filename }) => {
   return pathToFileURL(full).href; // e.g., file:///Users/you/menhir/vault/image/foo.jpg
 });
 
-// WRITE (autosave)
+// WRITE (autosave) + BROADCAST
 ipcMain.handle("save-item", async (_evt, payload) => {
-  // payload: { type, slug, updates: { title?, tags?, content?, ... } }
-  const vaultPath = path.join(__dirname, "vault");
+  const vaultPath = process.env.MENHIR_VAULT || path.join(__dirname, "vault");
   const filePath = path.join(vaultPath, payload.type, `${payload.slug}.md`);
   if (!fs.existsSync(filePath)) throw new Error("File not found: " + filePath);
 
@@ -70,12 +69,40 @@ ipcMain.handle("save-item", async (_evt, payload) => {
   const out = matter.stringify(nextContent, nextData);
   fs.writeFileSync(filePath, out, "utf8");
 
-  return {
-    ok: true,
-    type: payload.type,
+  // ---- Re-read the saved file to produce a normalized item like scanVault() ----
+  const reread = fs.readFileSync(filePath, "utf8");
+  const parsed = matter(reread);
+  const stat = fs.statSync(filePath);
+
+  // same sortTs/date logic as lib/vaultReader.js
+  function parseFrontmatterDate(data) {
+    const cand = data?.date || data?.created || data?.added || data?.updated;
+    if (!cand) return null;
+    const d = new Date(cand);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  const fmDate = parseFrontmatterDate(parsed.data);
+  const sortTs = fmDate ? fmDate.getTime() : stat.mtimeMs;
+
+  const savedItem = {
+    // Keep folder/path as used above so the grid keeps working
+    type: payload.type, // NOTE: your frontmatter `type` (singular) may also be present in parsed.data
     slug: payload.slug,
-    saved: Object.keys(updates),
+    ...parsed.data, // frontmatter can override `type` if you store singular here
+    content: parsed.content || "",
+    folder: payload.type, // the actual folder on disk
+    sortTs,
+    ...(fmDate ? { date: fmDate.toISOString() } : {}),
   };
+
+  // Broadcast to all renderer windows so UI updates immediately
+  const wins = BrowserWindow.getAllWindows();
+  for (const w of wins) {
+    w.webContents.send("vault:item-updated", savedItem);
+  }
+
+  // Also return to the invoker (modal autosave)
+  return { ok: true, item: savedItem, saved: Object.keys(updates) };
 });
 
 app.whenReady().then(createWindow);
