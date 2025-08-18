@@ -1,5 +1,4 @@
 export function createShell() {
-  // Use the existing mount if present; else create it
   let overlay = document.getElementById("modal-root");
   if (!overlay) {
     overlay = document.createElement("div");
@@ -11,7 +10,6 @@ export function createShell() {
     overlay.className = "modal-overlay";
   }
 
-  // Main container with left/right
   const modal = document.createElement("div");
   modal.className = "modal";
 
@@ -21,27 +19,30 @@ export function createShell() {
   const right = document.createElement("div");
   right.className = "modal-right";
 
-  // Right header with title slot + close button
   const header = document.createElement("div");
   header.className = "modal-header";
 
   const titleWrap = document.createElement("div");
-  titleWrap.className = "modal-title"; // views will set textContent
-  header.appendChild(titleWrap);
+  titleWrap.className = "modal-title";
+
+  const status = document.createElement("span");
+  status.className = "save-status";
+  status.textContent = "";
 
   const closeBtn = document.createElement("button");
   closeBtn.className = "modal-close";
   closeBtn.setAttribute("aria-label", "Close");
   closeBtn.textContent = "✕";
+
+  header.appendChild(titleWrap);
+  header.appendChild(status);
   header.appendChild(closeBtn);
 
-  // Right body (views will append .modal-section blocks here)
   const body = document.createElement("div");
   body.className = "modal-body";
 
   right.appendChild(header);
   right.appendChild(body);
-
   modal.appendChild(left);
   modal.appendChild(right);
   overlay.appendChild(modal);
@@ -53,7 +54,6 @@ export function createShell() {
     overlay.innerHTML = "";
   }
 
-  // Wire close interactions
   closeBtn.addEventListener("click", close);
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) close();
@@ -63,7 +63,6 @@ export function createShell() {
   };
   document.addEventListener("keydown", onKey, { once: true });
 
-  // Open state + scroll lock
   overlay.classList.add("is-open");
   overlay.setAttribute("aria-hidden", "false");
   document.body.classList.add("modal-open");
@@ -71,8 +70,9 @@ export function createShell() {
   return {
     slots: {
       left,
-      header: titleWrap, // views set title text here
-      body, // views append sections here
+      header: titleWrap,
+      body,
+      status, // <-- expose status element
     },
     close,
   };
