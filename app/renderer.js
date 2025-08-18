@@ -160,6 +160,34 @@ window.addEventListener("DOMContentLoaded", async () => {
     await renderGrid(grid, filteredItems);
     if (spinner) spinner.setAttribute("aria-hidden", "true");
 
+    // listen for local updates emitted by the modal autosaver and apply them to my arrays
+    window.addEventListener("menhir:item-updated", (ev) => {
+      const { folder, slug, updates } = ev.detail || {};
+      if (!folder || !slug) return;
+
+      // find the item in allItems by (folder, slug)
+      const idx = allItems.findIndex(
+        (it) => (it.folder || it.type) === folder && it.slug === slug
+      );
+      if (idx === -1) return;
+
+      // merge only the changed fields to preserve everything else (e.g., sortTs)
+      allItems[idx] = { ...allItems[idx], ...updates };
+
+      // rebuild the filtered view using the currently selected filter
+      const active = (currentFilter || "all").toLowerCase();
+      filteredItems =
+        active === "all"
+          ? [...allItems]
+          : allItems.filter((it) => (it.type || "").toLowerCase() === active);
+
+      // keep newest → oldest ordering
+      filteredItems.sort((a, b) => (b.sortTs || 0) - (a.sortTs || 0));
+
+      // re-render; existing nodes will be reused and updated by the grid (see step 3)
+      renderGrid(grid, filteredItems);
+    });
+
     // 🔁 Live update when any item is saved
     if (window.api?.onItemUpdated) {
       window.api.onItemUpdated((fresh) => {
