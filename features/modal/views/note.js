@@ -1,27 +1,40 @@
+// In features/modal/views/note.js
+
 import { makeAutosaver } from "../autosave.js";
+
+// Destructure the Editor from the global `toastui` object
+const Editor = toastui.Editor;
 
 export function renderNoteView({ item, slots }) {
   const autosave = makeAutosaver({ item, statusEl: slots.status });
 
-  // LEFT: big textarea for body
+  // --- LEFT: RENDER THE TOAST UI EDITOR ---
   slots.left.classList.add("note-left");
   const scroller = document.createElement("div");
   scroller.className = "modal-note-content";
-  const ta = document.createElement("textarea");
-  ta.value = item.content || "";
-  Object.assign(ta.style, {
-    width: "100%",
-    minHeight: "60vh",
-    border: "1px solid var(--rule)",
-    borderRadius: "6px",
-    padding: "10px",
-    fontFamily: "inherit",
-  });
-  ta.addEventListener("input", () => autosave({ content: ta.value }));
-  scroller.appendChild(ta);
+
+  // Create a container for the editor instance
+  const editorElement = document.createElement("div");
+  scroller.appendChild(editorElement);
   slots.left.appendChild(scroller);
 
-  // RIGHT: editable title
+  // Initialize the editor
+  const editor = new Editor({
+    el: editorElement,
+    initialValue: item.content || "",
+    initialEditType: "wysiwyg",
+    height: "100%",
+    usageStatistics: false,
+    theme: document.documentElement.getAttribute("data-theme") || "light",
+    events: {
+      change: () => {
+        const markdownContent = editor.getMarkdown();
+        autosave({ content: markdownContent });
+      },
+    },
+  });
+
+  // --- RIGHT: EDITABLE TITLE AND TAGS (This part remains the same) ---
   const titleInput = document.createElement("input");
   titleInput.type = "text";
   titleInput.value = item.title || item.slug || "Untitled";
@@ -40,7 +53,6 @@ export function renderNoteView({ item, slots }) {
     autosave({ title: titleInput.value })
   );
 
-  // RIGHT: tags
   const kv = document.createElement("div");
   kv.className = "modal-section modal-kv";
   const kTags = document.createElement("div");

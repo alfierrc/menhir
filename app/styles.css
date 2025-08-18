@@ -473,3 +473,46 @@ body.modal-open {
 .save-status.is-saved {
   color: var(--ink);
 }
+
+/* ==========================
+   TOAST UI Editor Styles
+   ========================== */
+
+.modal-note-content {
+  /* This container should fill the space */
+  height: 100%;
+}
+
+/* Override TUI's default background and text colors */
+.toastui-editor-defaultUI {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+
+.toastui-editor-defaultUI .toastui-editor-toolbar,
+.toastui-editor-defaultUI .toastui-editor-ww-container {
+  background-color: var(--panel);
+}
+
+.toastui-editor-contents {
+  color: var(--ink);
+}
+
+/* Style the toolbar items */
+.toastui-editor-toolbar-icons {
+  border-color: var(--rule) !important;
+  color: var(--ink-dim) !important;
+}
+
+/* Dark Theme Specifics */
+[data-theme="dark"] .toastui-editor-popup {
+  background-color: var(--bg) !important;
+}
+
+[data-theme="dark"] .toastui-editor-popup .toastui-editor-button {
+  color: var(--ink) !important;
+}
+
+[data-theme="dark"] .toastui-editor-popup .toastui-editor-button:hover {
+  background-color: var(--rule) !important;
+}
