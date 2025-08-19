@@ -29,24 +29,10 @@ export function createNoteCard(item) {
   // Square media container
   const media = document.createElement("div");
   media.className = "card-media";
-  media.style.display = "grid";
-  media.style.placeItems = "center";
-  media.style.aspectRatio = "1 / 1";
-  media.style.background = "#ffffffff";
-  media.style.padding = "12px";
-  media.style.overflow = "hidden";
 
   // Create excerpt text
   const excerpt = document.createElement("div");
   excerpt.className = "note-excerpt";
-  excerpt.style.fontSize = "13px";
-  excerpt.style.color = "#444";
-  excerpt.style.lineHeight = "1.4";
-  excerpt.style.textAlign = "center";
-  excerpt.style.display = "-webkit-box";
-  excerpt.style.webkitLineClamp = "6"; // ~6 lines max
-  excerpt.style.webkitBoxOrient = "vertical";
-  excerpt.style.overflow = "hidden";
 
   // Choose excerpt content
   if (item.content) {

@@ -173,11 +173,6 @@ header {
   display: block;
 }
 
-/* Caption below the cover (two-line title, one-line meta) */
-.grid.catalog .card-caption {
-  margin: 8px 2px 0;
-}
-
 .grid.catalog .card-title {
   font-weight: 400;
   font-size: 14px;
@@ -198,6 +193,26 @@ header {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.note-excerpt {
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.4;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.note-card .card-media {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 1;
+  background: var(--panel);
+  padding: 12px;
+  overflow: hidden;
 }
 
 /* Optional hover: subtle lift of cover only */
@@ -331,39 +346,6 @@ header {
   background: var(--panel);
   color: var(--ink);
   display: block; /* ensure regular flow for a scroller container */
-  overflow: auto;
-}
-
-/* Scrollable note content area */
-.modal-note-content {
-  padding: 20px;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-/* Markdown polish */
-.modal-note-content .md p {
-  margin: 0 0 12px;
-}
-.modal-note-content .md h1,
-.modal-note-content .md h2,
-.modal-note-content .md h3 {
-  margin: 16px 0 8px;
-  line-height: 1.25;
-}
-.modal-note-content .md ul,
-.modal-note-content .md ol {
-  margin: 10px 0 10px 20px;
-}
-.modal-note-content .md code {
-  background: #f4f4f4;
-  padding: 2px 4px;
-  border-radius: 4px;
-}
-.modal-note-content .md pre {
-  background: #f6f6f6;
-  padding: 10px;
-  border-radius: 8px;
   overflow: auto;
 }
 
