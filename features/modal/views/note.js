@@ -1,9 +1,8 @@
 // In features/modal/views/note.js
 
+import Editor from "@toast-ui/editor"; // Import the editor class from the npm package
+import "@toast-ui/editor/dist/toastui-editor.css"; // Import the CSS for the bundler to handle
 import { makeAutosaver } from "../autosave.js";
-
-// Destructure the Editor from the global `toastui` object
-const Editor = toastui.Editor;
 
 export function renderNoteView({ item, slots }) {
   const autosave = makeAutosaver({ item, statusEl: slots.status });
@@ -13,12 +12,10 @@ export function renderNoteView({ item, slots }) {
   const scroller = document.createElement("div");
   scroller.className = "modal-note-content";
 
-  // Create a container for the editor instance
   const editorElement = document.createElement("div");
   scroller.appendChild(editorElement);
   slots.left.appendChild(scroller);
 
-  // Initialize the editor
   const editor = new Editor({
     el: editorElement,
     initialValue: item.content || "",
@@ -34,7 +31,7 @@ export function renderNoteView({ item, slots }) {
     },
   });
 
-  // --- RIGHT: EDITABLE TITLE AND TAGS (This part remains the same) ---
+  // --- RIGHT: EDITABLE TITLE AND TAGS (Remains the same) ---
   const titleInput = document.createElement("input");
   titleInput.type = "text";
   titleInput.value = item.title || item.slug || "Untitled";
