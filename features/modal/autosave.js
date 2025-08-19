@@ -35,17 +35,6 @@ export function makeAutosaver({ item, statusEl }) {
       // mirror the saved fields into the in-modal item so everything stays in sync
       Object.assign(item, updates);
 
-      // broadcast a lightweight local event so the grid can update without a full reload
-      window.dispatchEvent(
-        new CustomEvent("menhir:item-updated", {
-          detail: {
-            folder: item.folder || item.type, // cards use folder+slug as stable identity
-            slug: item.slug,
-            updates,
-          },
-        })
-      );
-
       // show the "Saved" tick
       showSaved();
     } catch (e) {
