@@ -36,11 +36,16 @@ export function createNoteCard(item) {
 
   // Choose excerpt content
   if (item.content) {
-    const clean = item.content.replace(/[#*_>\-]/g, "").trim();
-    excerpt.textContent =
-      clean.length > 0
-        ? clean.split(/\s+/).slice(0, 40).join(" ") + "…"
-        : item.title || item.slug || "Note";
+    // 1. Strip markdown characters but keep line breaks
+    const clean = item.content.replace(/[#*_>\-`]/g, "").trim();
+
+    // 2. Truncate to a character limit
+    const maxLength = 140;
+    let truncated = clean;
+    if (clean.length > maxLength) {
+      truncated = clean.substring(0, maxLength) + "…";
+    }
+    excerpt.textContent = truncated;
   } else {
     excerpt.textContent = item.title || item.slug || "Note";
   }

@@ -49,10 +49,14 @@ function updateNodeForItem(node, item) {
   if ((item.type || "").toLowerCase() === "note") {
     const ex = node.querySelector(".note-excerpt");
     if (ex) {
-      const raw = (item.content || "").replace(/[#*_>\-]/g, "").trim();
-      if (raw.length > 0) {
-        const words = raw.split(/\s+/).slice(0, 40).join(" ");
-        ex.textContent = words + "…";
+      if (item.content) {
+        const clean = item.content.replace(/[#*_>\-`]/g, "").trim();
+        const maxLength = 140;
+        let truncated = clean;
+        if (clean.length > maxLength) {
+          truncated = clean.substring(0, maxLength) + "…";
+        }
+        ex.textContent = truncated;
       } else {
         ex.textContent = item.title || item.slug || "Note";
       }
