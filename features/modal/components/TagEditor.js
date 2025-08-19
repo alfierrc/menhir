@@ -44,22 +44,25 @@ export function renderTags({ item, autosave, container }) {
 
   // --- Add event listeners ---
   addTagButton.addEventListener("click", () => {
-    addTagButton.style.display = "none";
-    addTagInput.style.display = "inline-block";
+    addTagInput.classList.add("is-visible");
     addTagInput.focus();
   });
 
+  const resetInput = () => {
+    addTagInput.value = "";
+    addTagInput.classList.remove("is-visible");
+  };
+
   const commitTag = () => {
     const newTag = addTagInput.value.trim();
+
     if (newTag && !currentTags.includes(newTag)) {
       const newTagsArray = [...currentTags, newTag];
       autosave({ tags: newTagsArray });
       vTagsContainer.insertBefore(createPill(newTag), addTagInput);
       currentTags = newTagsArray;
     }
-    addTagInput.value = "";
-    addTagInput.style.display = "none";
-    addTagButton.style.display = "inline-flex";
+    resetInput();
   };
 
   addTagInput.addEventListener("keydown", (e) => {
@@ -68,9 +71,7 @@ export function renderTags({ item, autosave, container }) {
       commitTag();
     }
     if (e.key === "Escape") {
-      addTagInput.value = "";
-      addTagInput.style.display = "none";
-      addTagButton.style.display = "inline-flex";
+      resetInput();
     }
   });
 
