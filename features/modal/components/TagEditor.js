@@ -1,5 +1,4 @@
 export function renderTags({ item, autosave, container }) {
-  // --- Create the "tags" label ---
   const kTags = document.createElement("div");
   kTags.className = "k";
   kTags.textContent = "tags";
@@ -7,15 +6,6 @@ export function renderTags({ item, autosave, container }) {
   const vTagsContainer = document.createElement("div");
   vTagsContainer.className = "v tag-pills-container";
 
-  // Function to create a pill element
-  const createPill = (tag) => {
-    const pill = document.createElement("span");
-    pill.className = "tag-pill";
-    pill.textContent = tag;
-    return pill;
-  };
-
-  // Get the initial list of tags
   let currentTags = Array.isArray(item.tags)
     ? item.tags
     : String(item.tags || "")
@@ -23,10 +13,38 @@ export function renderTags({ item, autosave, container }) {
         .map((t) => t.trim())
         .filter(Boolean);
 
-  // Display the existing tags
-  for (const tag of currentTags) {
+  // --- This function is now updated to include a delete button ---
+  const createPill = (tag) => {
+    const pill = document.createElement("span");
+    pill.className = "tag-pill";
+
+    const pillText = document.createElement("span");
+    pillText.textContent = tag;
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "delete-tag-btn";
+    deleteBtn.textContent = "×"; // A nicer looking 'x'
+    deleteBtn.setAttribute("aria-label", `Remove tag: ${tag}`);
+
+    // Add the delete logic
+    deleteBtn.addEventListener("click", () => {
+      // Remove the tag from our array
+      currentTags = currentTags.filter((t) => t !== tag);
+      // Save the updated array
+      autosave({ tags: currentTags });
+      // Remove the pill from the UI immediately
+      pill.remove();
+    });
+
+    pill.appendChild(pillText);
+    pill.appendChild(deleteBtn);
+    return pill;
+  };
+
+  // Display existing tags
+  currentTags.forEach((tag) => {
     vTagsContainer.appendChild(createPill(tag));
-  }
+  });
 
   // --- Create the "Add Tag" UI ---
   const addTagInput = document.createElement("input");

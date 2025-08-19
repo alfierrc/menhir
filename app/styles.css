@@ -370,10 +370,54 @@ body.modal-open {
   font-size: 10px;
   line-height: 1.4;
   cursor: pointer;
+  align-items: center;
+  position: relative;
 }
 
 .tag-pill:hover {
   filter: brightness(80%);
+}
+
+.delete-tag-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  /* Nudge the button to be perfectly centered on the corner */
+  transform: translate(40%, -40%);
+
+  /* Make it a circle */
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+
+  /* Appearance */
+  background-color: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+
+  /* Center the '×' inside the circle */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-size: 12px;
+
+  /* Hide/show logic remains the same */
+  cursor: pointer;
+  opacity: 0;
+  transition: all 150ms ease;
+}
+
+/* Show the delete button when hovering over the pill */
+.tag-pill:hover .delete-tag-btn {
+  opacity: 1;
+  transform: translate(40%, -40%) scale(1.1); /* Add a subtle pop effect */
+}
+
+.delete-tag-btn:hover {
+  background-color: var(--ink);
+  color: var(--panel);
 }
 
 /* In app/styles.css */
