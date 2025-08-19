@@ -376,6 +376,52 @@ body.modal-open {
   filter: brightness(80%);
 }
 
+/* In app/styles.css */
+
+/* --- Styles for Inline Tag Editing --- */
+
+/* Ensure the container aligns everything nicely */
+.tag-pills-container {
+  align-items: center;
+}
+
+/* The circular plus button */
+.add-tag-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink-dim);
+  background-color: transparent;
+  border: 1px dashed var(--rule);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.add-tag-button:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+  transform: scale(1.1);
+}
+
+/* The input field that appears */
+.add-tag-input {
+  display: none; /* Hidden by default */
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--ink);
+  background-color: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 4px 8px;
+  width: 120px; /* The width it animates to */
+  outline: none;
+}
+
 @media (max-width: 1000px) {
   .modal {
     grid-template-columns: 1fr;

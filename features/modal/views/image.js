@@ -1,4 +1,5 @@
 import { makeAutosaver } from "../autosave.js";
+import { renderTags } from "../components/TagEditor.js";
 
 export function renderImageView({ item, slots }) {
   // LEFT: image as-is
@@ -38,34 +39,8 @@ export function renderImageView({ item, slots }) {
   const kv = document.createElement("div");
   kv.className = "modal-section modal-kv";
 
-  // --- Create tag pills (or a placeholder) ---
-  const kTags = document.createElement("div");
-  kTags.className = "k";
-  kTags.textContent = "tags";
-
-  const vTagsContainer = document.createElement("div");
-  vTagsContainer.className = "v tag-pills-container";
-
-  if (item.tags && item.tags.length > 0) {
-    const tags = Array.isArray(item.tags)
-      ? item.tags
-      : String(item.tags)
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
-
-    for (const tag of tags) {
-      const pill = document.createElement("span");
-      pill.className = "tag-pill";
-      pill.textContent = tag;
-      vTagsContainer.appendChild(pill);
-    }
-  } else {
-    vTagsContainer.textContent = "—";
-    vTagsContainer.style.color = "var(--ink-dim)";
-  }
-  kv.appendChild(kTags);
-  kv.appendChild(vTagsContainer);
+  // --- tags ---
+  renderTags({ item, autosave, container: kv });
 
   const skip = new Set([
     "slug",

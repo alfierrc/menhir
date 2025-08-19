@@ -4,6 +4,7 @@ import Editor from "@toast-ui/editor"; // Import the editor class from the npm p
 import "@toast-ui/editor/dist/toastui-editor.css"; // Import the CSS for the bundler to handle
 import "@toast-ui/editor/dist/theme/toastui-editor-dark.css";
 import { makeAutosaver } from "../autosave.js";
+import { renderTags } from "../components/TagEditor.js";
 
 export function renderNoteView({ item, slots }) {
   const autosave = makeAutosaver({ item, statusEl: slots.status });
@@ -44,7 +45,6 @@ export function renderNoteView({ item, slots }) {
     },
   });
 
-  // --- RIGHT: EDITABLE TITLE AND TAGS (Remains the same) ---
   const titleInput = document.createElement("input");
   titleInput.type = "text";
   titleInput.value = item.title || item.slug || "Untitled";
@@ -66,33 +66,8 @@ export function renderNoteView({ item, slots }) {
   // RIGHT: tags
   const kv = document.createElement("div");
   kv.className = "modal-section modal-kv";
-  const kTags = document.createElement("div");
-  kTags.className = "k";
-  kTags.textContent = "tags";
-
-  const vTagsContainer = document.createElement("div");
-  vTagsContainer.className = "v tag-pills-container";
-
-  // Check if there are tags to display
-  if (item.tags && item.tags.length > 0) {
-    const tags = Array.isArray(item.tags)
-      ? item.tags
-      : String(item.tags)
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
-
-    for (const tag of tags) {
-      const pill = document.createElement("span");
-      pill.className = "tag-pill";
-      pill.textContent = tag;
-      vTagsContainer.appendChild(pill);
-    }
-  } else {
-    // Add a placeholder if there are no tags
-    vTagsContainer.textContent = "—";
-    vTagsContainer.style.color = "var(--ink-dim)";
-  }
+  renderTags({ item, autosave, container: kv });
+  slots.body.appendChild(kv);
 
   // Add the section to the modal body
   kv.appendChild(kTags);
