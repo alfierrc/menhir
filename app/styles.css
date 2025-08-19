@@ -479,40 +479,34 @@ body.modal-open {
    ========================== */
 
 .modal-note-content {
-  /* This container should fill the space */
   height: 100%;
 }
 
-/* Override TUI's default background and text colors */
-.toastui-editor-defaultUI {
-  border: 1px solid var(--rule);
-  border-radius: 6px;
+/* .toastui-editor-toolbar {
+  font-family: necto;
+} */
+
+.toastui-editor-md-tab-container {
+  background-color: var(--panel) !important;
 }
 
-.toastui-editor-defaultUI .toastui-editor-toolbar,
-.toastui-editor-defaultUI .toastui-editor-ww-container {
-  background-color: var(--panel);
+.toastui-editor-defaultUI-toolbar {
+  background-color: var(--panel) !important;
+}
+/* 
+.tab-item {
+  background-color: var(--panel) !important;
 }
 
-.toastui-editor-contents {
-  color: var(--ink);
-}
+.tab-item .active {
+  background-color: var(--ink) !important;
+} */
 
-/* Style the toolbar items */
+.toastui-editor-dropdown-toolbar {
+  background-color: var(--panel) !important;
+}
+/* 
 .toastui-editor-toolbar-icons {
-  border-color: var(--rule) !important;
-  color: var(--ink-dim) !important;
-}
-
-/* Dark Theme Specifics */
-[data-theme="dark"] .toastui-editor-popup {
-  background-color: var(--bg) !important;
-}
-
-[data-theme="dark"] .toastui-editor-popup .toastui-editor-button {
-  color: var(--ink) !important;
-}
-
-[data-theme="dark"] .toastui-editor-popup .toastui-editor-button:hover {
-  background-color: var(--rule) !important;
-}
+  color: blue !important;
+  border-radius: 2px;
+} */
