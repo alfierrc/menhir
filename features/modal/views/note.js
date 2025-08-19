@@ -63,25 +63,39 @@ export function renderNoteView({ item, slots }) {
     autosave({ title: titleInput.value })
   );
 
+  // RIGHT: tags
   const kv = document.createElement("div");
   kv.className = "modal-section modal-kv";
   const kTags = document.createElement("div");
   kTags.className = "k";
   kTags.textContent = "tags";
-  const vTags = document.createElement("input");
-  vTags.type = "text";
-  vTags.className = "v";
-  vTags.value = Array.isArray(item.tags)
-    ? item.tags.join(", ")
-    : item.tags || "";
-  Object.assign(vTags.style, {
-    width: "100%",
-    border: "1px solid var(--rule)",
-    borderRadius: "4px",
-    padding: "6px 8px",
-  });
-  vTags.addEventListener("input", () => autosave({ tags: vTags.value }));
+
+  const vTagsContainer = document.createElement("div");
+  vTagsContainer.className = "v tag-pills-container";
+
+  // Check if there are tags to display
+  if (item.tags && item.tags.length > 0) {
+    const tags = Array.isArray(item.tags)
+      ? item.tags
+      : String(item.tags)
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
+
+    for (const tag of tags) {
+      const pill = document.createElement("span");
+      pill.className = "tag-pill";
+      pill.textContent = tag;
+      vTagsContainer.appendChild(pill);
+    }
+  } else {
+    // Add a placeholder if there are no tags
+    vTagsContainer.textContent = "—";
+    vTagsContainer.style.color = "var(--ink-dim)";
+  }
+
+  // Add the section to the modal body
   kv.appendChild(kTags);
-  kv.appendChild(vTags);
+  kv.appendChild(vTagsContainer);
   slots.body.appendChild(kv);
 }

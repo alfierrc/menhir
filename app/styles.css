@@ -349,6 +349,33 @@ header {
 body.modal-open {
   overflow: hidden;
 }
+
+/* --- Styles for Tag Pills --- */
+
+/* Container for the pills to handle wrapping */
+.tag-pills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px; /* Space between pills */
+  align-items: center;
+}
+
+/* Individual pill style */
+.tag-pill {
+  display: inline-block;
+  background-color: var(--rule);
+  color: var(--ink);
+  padding: 4px 10px;
+  border-radius: 12px; /* Pill shape */
+  font-size: 10px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.tag-pill:hover {
+  filter: brightness(80%);
+}
+
 @media (max-width: 1000px) {
   .modal {
     grid-template-columns: 1fr;

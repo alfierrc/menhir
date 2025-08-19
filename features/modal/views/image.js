@@ -38,24 +38,34 @@ export function renderImageView({ item, slots }) {
   const kv = document.createElement("div");
   kv.className = "modal-section modal-kv";
 
+  // --- Create tag pills (or a placeholder) ---
   const kTags = document.createElement("div");
   kTags.className = "k";
   kTags.textContent = "tags";
-  const vTags = document.createElement("input");
-  vTags.type = "text";
-  vTags.className = "v";
-  vTags.value = Array.isArray(item.tags)
-    ? item.tags.join(", ")
-    : item.tags || "";
-  Object.assign(vTags.style, {
-    width: "100%",
-    border: "1px solid var(--rule)",
-    borderRadius: "4px",
-    padding: "6px 8px",
-  });
-  vTags.addEventListener("input", () => autosave({ tags: vTags.value }));
+
+  const vTagsContainer = document.createElement("div");
+  vTagsContainer.className = "v tag-pills-container";
+
+  if (item.tags && item.tags.length > 0) {
+    const tags = Array.isArray(item.tags)
+      ? item.tags
+      : String(item.tags)
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
+
+    for (const tag of tags) {
+      const pill = document.createElement("span");
+      pill.className = "tag-pill";
+      pill.textContent = tag;
+      vTagsContainer.appendChild(pill);
+    }
+  } else {
+    vTagsContainer.textContent = "—";
+    vTagsContainer.style.color = "var(--ink-dim)";
+  }
   kv.appendChild(kTags);
-  kv.appendChild(vTags);
+  kv.appendChild(vTagsContainer);
 
   const skip = new Set([
     "slug",
