@@ -6,9 +6,9 @@
       http-equiv="Content-Security-Policy"
       content="
         default-src 'self';
-        img-src 'self' file: data:;
+        img-src 'self' local-resource: data:;
         script-src 'self';
-        style-src 'self';
+        style-src 'self' 'unsafe-inline';
         font-src 'self' data:;
     "
     />
@@ -18,7 +18,7 @@
     <script src="./vendor/minimasonry.min.js"></script>
     <script src="./vendor/marked.min.js"></script>
     <script src="./vendor/dompurify.min.js"></script>
-    <script defer src="./renderer.js" type="module"></script>
+    <script type="module" src="./renderer.js"></script>
   </head>
   <body>
     <header>Menhir v0</header>

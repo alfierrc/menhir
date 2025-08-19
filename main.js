@@ -1,22 +1,35 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, protocol } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const matter = require("gray-matter");
 const { pathToFileURL } = require("url");
 const { scanVault } = require("./lib/vaultReader");
 
+// This variable will be set automatically by the Vite plugin during development
+const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1100,
     height: 800,
     webPreferences: {
+      // The path to the preload script is handled correctly by the Vite plugin
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
     },
   });
-  win.loadFile(path.join(__dirname, "app", "index.html"));
+
+  // This is the crucial change:
+  // Load from the Vite dev server in development, or load the built file in production
+  if (VITE_DEV_SERVER_URL) {
+    win.loadURL(VITE_DEV_SERVER_URL);
+  } else {
+    // This path is for a production build, which you can configure later.
+    // It's pointing to the expected output of your last vite.config.js
+    win.loadFile(path.join(__dirname, "..", "dist", "app", "index.html"));
+  }
 }
 
 ipcMain.handle("load-vault", async () => {
@@ -33,9 +46,7 @@ ipcMain.handle("load-vault", async () => {
 });
 
 ipcMain.handle("get-image-path", (_e, { folder, filename }) => {
-  const vaultPath = process.env.MENHIR_VAULT || path.join(__dirname, "vault");
-  const full = path.join(vaultPath, folder, filename);
-  return pathToFileURL(full).href; // e.g., file:///Users/you/menhir/vault/image/foo.jpg
+  return `local-resource://${folder}/${filename}`;
 });
 
 // WRITE (autosave) + BROADCAST
@@ -105,4 +116,15 @@ ipcMain.handle("save-item", async (_evt, payload) => {
   return { ok: true, item: savedItem, saved: Object.keys(updates) };
 });
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  const vaultPath = process.env.MENHIR_VAULT || path.join(__dirname, "vault");
+
+  // Register the new protocol to serve files from the vault
+  protocol.registerFileProtocol("local-resource", (request, callback) => {
+    const url = request.url.replace("local-resource://", "");
+    const filePath = path.join(vaultPath, url);
+    callback(filePath);
+  });
+
+  createWindow();
+});
