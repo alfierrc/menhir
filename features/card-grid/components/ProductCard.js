@@ -47,6 +47,16 @@ export function createProductCard(item) {
   const img = document.createElement("img");
 
   media.appendChild(img);
+
+  // Create and add the price box if a price exists
+  if (item.price) {
+    const priceBox = document.createElement("div");
+    priceBox.className = "price-box";
+    // You can format the price here, for example, by adding a currency symbol
+    priceBox.textContent = `$${item.price}`;
+    media.appendChild(priceBox);
+  }
+
   card.appendChild(media);
   wrap.appendChild(card);
 
