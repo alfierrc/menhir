@@ -1,18 +1,18 @@
 import { defineConfig } from "vite";
 import electron from "vite-plugin-electron";
 import renderer from "vite-plugin-electron-renderer";
+import { resolve } from "path";
 
 export default defineConfig({
-  // Tell Vite to use the 'app' directory as the root for the dev server
-  root: "app",
+  // We no longer need the 'root' property here.
   plugins: [
     electron([
       {
-        // Adjust the entry point paths to be relative to the project root
-        entry: "../main.js",
+        // Main-Process entry file (relative to project root)
+        entry: "main.js",
       },
       {
-        entry: "../preload.js",
+        entry: "preload.js",
         onstart(options) {
           options.reload();
         },
@@ -20,4 +20,12 @@ export default defineConfig({
     ]),
     renderer(),
   ],
+  // Explicitly tell Vite where to find the HTML file.
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, "app/index.html"),
+      },
+    },
+  },
 });

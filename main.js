@@ -21,14 +21,13 @@ function createWindow() {
     },
   });
 
-  // This is the crucial change:
   // Load from the Vite dev server in development, or load the built file in production
   if (VITE_DEV_SERVER_URL) {
-    win.loadURL(VITE_DEV_SERVER_URL);
+    // Append the correct path to the dev server URL
+    win.loadURL(`${VITE_DEV_SERVER_URL}/app/index.html`);
   } else {
-    // This path is for a production build, which you can configure later.
-    // It's pointing to the expected output of your last vite.config.js
-    win.loadFile(path.join(__dirname, "..", "dist", "app", "index.html"));
+    // The production build path is now correct based on the new Vite config
+    win.loadFile(path.join(__dirname, "../dist/app/index.html"));
   }
 }
 

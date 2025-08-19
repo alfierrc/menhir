@@ -2,6 +2,7 @@
 node_modules/
 dist/
 build/
+/dist-electron/
 
 # Mac system files
 .DS_Store
