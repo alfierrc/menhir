@@ -14,6 +14,7 @@ const { contextBridge, ipcRenderer } = require("electron");
       // deliver normalized item objects from main
       ipcRenderer.on("vault:item-updated", (_e, item) => cb(item));
     },
+    onVaultRefresh: (cb) => ipcRenderer.on("vault:refresh-needed", () => cb()),
   });
 
   globalThis.__preloadDone = true;
