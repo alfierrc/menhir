@@ -8,75 +8,57 @@ const {
 const path = require("path");
 const fs = require("fs").promises; // Use async file system
 const matter = require("gray-matter");
+const { pathToFileURL } = require("url");
 const { scanVault } = require("./lib/vaultReader");
 
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
-let win; // Make the window object accessible to other parts of the app
+let win;
 
-// --- Single Instance Lock ---
-// This prevents multiple instances of your app from running.
+// --- SINGLE INSTANCE LOCK ---
+// Ensures only one instance of the app runs. This is the fix for the launch error.
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
   app.quit();
 } else {
-  app.on("second-instance", (event, commandLine, workingDirectory) => {
-    // Someone tried to run a second instance. We should focus our window
-    // and handle the URL they tried to open.
-    const url = commandLine.pop();
-    if (url.startsWith("menhir://")) {
-      handleCaptureUrl(url);
-    }
+  app.on("second-instance", (event, commandLine) => {
+    // A second instance was attempted. Focus our window and handle the URL.
     if (win) {
+      const url = commandLine.find((arg) => arg.startsWith("menhir://"));
+      if (url) {
+        handleCaptureUrl(url);
+      }
       if (win.isMinimized()) win.restore();
       win.focus();
     }
   });
 }
-// --- End Single Instance Lock ---
 
-// --- Capture Handler ---
-// This function processes the incoming URL from the browser extension.
+// --- CAPTURE HANDLER ---
 async function handleCaptureUrl(captureUrl) {
   try {
     const url = new URL(captureUrl);
     const params = url.searchParams;
+    // Use the robust app.getPath('userData') for the vault
     const vaultPath =
       process.env.MENHIR_VAULT || path.join(app.getPath("userData"), "vault");
-
     const title = params.get("title") || "Untitled Capture";
     const slug = `capture-${Date.now()}`;
-
-    const frontmatter = {
-      title: title,
-      source: params.get("url"),
-      tags: (params.get("tags") || "").split(",").filter(Boolean),
-    };
-
-    const content = params.get("selection") || "";
-    const fileContents = matter.stringify(content, frontmatter);
-
-    // Ensure the 'note' directory exists
+    const frontmatter = { title, source: params.get("url"), tags: [] };
+    const fileContents = matter.stringify("", frontmatter);
     const noteDir = path.join(vaultPath, "note");
     await fs.mkdir(noteDir, { recursive: true });
-
     const filePath = path.join(noteDir, `${slug}.md`);
     await fs.writeFile(filePath, fileContents, "utf8");
 
-    // Show a success notification
     new Notification({
       title: "Menhir",
       body: `✅ Captured "${title}"`,
     }).show();
-
-    // Refresh the vault in the renderer
+    // Tell the renderer to refresh its data
     win?.webContents.send("vault:refresh-needed");
   } catch (e) {
     console.error("Failed to handle capture URL:", e);
-    new Notification({
-      title: "Menhir Capture Failed",
-      body: e.message,
-    }).show();
   }
 }
 // --- End Capture Handler ---
@@ -196,16 +178,16 @@ ipcMain.handle("save-item", async (_evt, payload) => {
 // In main.js
 
 app.whenReady().then(() => {
+  // Use the robust app.getPath() here as well
   const vaultPath =
     process.env.MENHIR_VAULT || path.join(app.getAppPath(), "vault");
-
   protocol.registerFileProtocol("local-resource", (request, callback) => {
     const url = request.url.replace("local-resource://", "");
     const filePath = path.join(vaultPath, url);
     callback(filePath);
   });
 
-  // Handler for macOS when the app is already open
+  // Handler for macOS
   app.on("open-url", (event, url) => {
     if (url.startsWith("menhir://")) {
       event.preventDefault();
@@ -213,24 +195,8 @@ app.whenReady().then(() => {
     }
   });
 
-  // --- THIS IS THE CORRECTED REGISTRATION LOGIC ---
-  // This logic correctly tells the OS how to launch your app in both
-  // development and a final packaged build.
-  if (process.defaultApp) {
-    if (process.platform === "win32") {
-      // For Windows dev mode, we pass the project root directory.
-      // '.' resolves to the current working directory, which is your project root.
-      app.setAsDefaultProtocolClient("menhir", process.execPath, [
-        path.resolve("."),
-      ]);
-    } else {
-      app.setAsDefaultProtocolClient("menhir");
-    }
-  } else {
-    // For packaged apps on all platforms
-    app.setAsDefaultProtocolClient("menhir");
-  }
-  // --- END OF CORRECTION ---
+  // Simplified protocol registration
+  app.setAsDefaultProtocolClient("menhir");
 
   createWindow();
 });

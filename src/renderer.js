@@ -149,11 +149,12 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   try {
     window.api.onVaultRefresh(async () => {
-      // This is a simple way to refresh. You could make this more efficient later.
+      // Reload the vault data
       allItems = await window.api.loadVault();
       allItems.sort((a, b) => (b.sortTs || 0) - (a.sortTs || 0));
-      // Re-filter and re-render
-      const filter = currentFilter;
+
+      // Re-apply the current filter and re-render the grid
+      const filter = currentFilter || "all";
       filteredItems =
         filter === "all"
           ? [...allItems]
