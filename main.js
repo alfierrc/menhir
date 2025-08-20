@@ -40,23 +40,29 @@ async function handleCaptureUrl(captureUrl) {
   try {
     const url = new URL(captureUrl);
     const params = url.searchParams;
+
+    const itemType = params.get("type") || "webpage"; // Get the type from the URL
     const title = params.get("title") || "Untitled Capture";
-    const slug = `capture-${Date.now()}`;
-    const frontmatter = {
-      type: "webpage",
-      title,
-      source: params.get("url"),
-      tags: [],
-    };
+    const slug = `${itemType}-capture-${Date.now()}`;
+
+    // Start with a base frontmatter object
+    let frontmatter = { title };
+
+    // Add fields based on what the extension sent
+    if (params.has("source")) frontmatter.source = params.get("source");
+    if (params.has("price")) frontmatter.price = params.get("price");
+    if (params.has("image")) frontmatter.image = params.get("image");
+
     const fileContents = matter.stringify("", frontmatter);
-    const noteDir = path.join(vaultPath, "webpage");
-    await fsp.mkdir(noteDir, { recursive: true });
-    const filePath = path.join(noteDir, `${slug}.md`);
+    const saveDir = path.join(vaultPath, itemType); // Save to the correct folder (e.g., vault/product)
+
+    await fsp.mkdir(saveDir, { recursive: true });
+    const filePath = path.join(saveDir, `${slug}.md`);
     await fsp.writeFile(filePath, fileContents, "utf8");
 
     new Notification({
       title: "Menhir",
-      body: `✅ Captured "${title}"`,
+      body: `✅ Captured "${title}" as ${itemType}`,
     }).show();
     win?.webContents.send("vault:refresh-needed");
   } catch (e) {
