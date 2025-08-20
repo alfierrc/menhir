@@ -38,23 +38,60 @@ if (!gotTheLock) {
 // --- CAPTURE HANDLER ---
 async function handleCaptureUrl(captureUrl) {
   try {
+    // Helper function to create a filename-safe "slug" from a title
+    function slugify(text) {
+      return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-") // Replace spaces with -
+        .replace(/[^\w\-]+/g, "") // Remove all non-word chars except -
+        .replace(/\-\-+/g, "-") // Replace multiple - with single -
+        .substring(0, 50); // Truncate to a reasonable length
+    }
+
     const url = new URL(captureUrl);
     const params = url.searchParams;
 
-    const itemType = params.get("type") || "webpage"; // Get the type from the URL
+    const itemType = params.get("type") || "webpage";
     const title = params.get("title") || "Untitled Capture";
-    const slug = `${itemType}-capture-${Date.now()}`;
 
-    // Start with a base frontmatter object
+    // 1. Create the new, human-readable slug
+    const slug = `${slugify(title)}-${Date.now()}`;
+
     let frontmatter = { title };
-
-    // Add fields based on what the extension sent
     if (params.has("source")) frontmatter.source = params.get("source");
     if (params.has("price")) frontmatter.price = params.get("price");
-    if (params.has("image")) frontmatter.image = params.get("image");
+
+    // 2. --- Image Downloading Logic ---
+    if (params.has("image")) {
+      const imageUrl = params.get("image");
+      console.log(`Attempting to download image: ${imageUrl}`);
+      try {
+        const response = await fetch(imageUrl); // Use Node's built-in fetch
+        if (response.ok) {
+          const imageBuffer = Buffer.from(await response.arrayBuffer());
+          // Create a unique filename for the image based on the item's slug
+          const extension = path.extname(new URL(imageUrl).pathname) || ".jpg";
+          const imageFilename = `${slug}${extension}`;
+          const saveDir = path.join(vaultPath, itemType);
+
+          await fsp.mkdir(saveDir, { recursive: true });
+          await fsp.writeFile(path.join(saveDir, imageFilename), imageBuffer);
+
+          // Save the *local* filename to the frontmatter, not the original URL
+          frontmatter.image = imageFilename;
+          console.log(`Successfully saved image as: ${imageFilename}`);
+        }
+      } catch (imgErr) {
+        console.error("Failed to download image:", imgErr);
+        // If download fails, save the original URL as a fallback
+        frontmatter.image = imageUrl;
+      }
+    }
 
     const fileContents = matter.stringify("", frontmatter);
-    const saveDir = path.join(vaultPath, itemType); // Save to the correct folder (e.g., vault/product)
+    const saveDir = path.join(vaultPath, itemType);
 
     await fsp.mkdir(saveDir, { recursive: true });
     const filePath = path.join(saveDir, `${slug}.md`);
