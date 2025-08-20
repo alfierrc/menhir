@@ -8,10 +8,9 @@ const {
 } = require("electron");
 const path = require("path");
 const fs = require("fs");
-const fsp = require("fs").promises; // Use async file system
+const fsp = require("fs").promises;
 const matter = require("gray-matter");
 const Store = require("electron-store").default;
-const { pathToFileURL } = require("url");
 const { scanVault } = require("./lib/vaultReader");
 
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
@@ -20,14 +19,11 @@ let win;
 let vaultPath;
 
 // --- SINGLE INSTANCE LOCK ---
-// Ensures only one instance of the app runs. This is the fix for the launch error.
 const gotTheLock = app.requestSingleInstanceLock();
-
 if (!gotTheLock) {
   app.quit();
 } else {
   app.on("second-instance", (event, commandLine) => {
-    // A second instance was attempted. Focus our window and handle the URL.
     if (win) {
       const url = commandLine.find((arg) => arg.startsWith("menhir://"));
       if (url) {
@@ -44,29 +40,23 @@ async function handleCaptureUrl(captureUrl) {
   try {
     const url = new URL(captureUrl);
     const params = url.searchParams;
-    // Use the robust app.getPath('userData') for the vault
-    const vaultPath =
-      process.env.MENHIR_VAULT || path.join(app.getPath("userData"), "vault");
     const title = params.get("title") || "Untitled Capture";
     const slug = `capture-${Date.now()}`;
     const frontmatter = { title, source: params.get("url"), tags: [] };
     const fileContents = matter.stringify("", frontmatter);
     const noteDir = path.join(vaultPath, "note");
-    await fs.mkdir(noteDir, { recursive: true });
+    await fsp.mkdir(noteDir, { recursive: true });
     const filePath = path.join(noteDir, `${slug}.md`);
-    await fs.writeFile(filePath, fileContents, "utf8");
-
+    await fsp.writeFile(filePath, fileContents, "utf8");
     new Notification({
       title: "Menhir",
       body: `✅ Captured "${title}"`,
     }).show();
-    // Tell the renderer to refresh its data
     win?.webContents.send("vault:refresh-needed");
   } catch (e) {
     console.error("Failed to handle capture URL:", e);
   }
 }
-// --- End Capture Handler ---
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -90,6 +80,31 @@ function createWindow() {
   }
 }
 
+// tell the renderer where the vault is
+ipcMain.handle("get-vault-path", () => {
+  return vaultPath;
+});
+
+// allow the user to select a new vault
+ipcMain.handle("change-vault-path", async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+    title: "Select New Vault Folder",
+    properties: ["openDirectory", "createDirectory"],
+  });
+  if (canceled || filePaths.length === 0) {
+    return null;
+  }
+
+  const newPath = filePaths[0];
+  store.set("vaultPath", newPath);
+  vaultPath = newPath;
+
+  // Send the refresh signal, just like the capture handler
+  win?.webContents.send("vault:refresh-needed");
+
+  return newPath;
+});
+
 ipcMain.handle("load-vault", async () => {
   if (!vaultPath) return []; // Don't try to load if a vault hasn't been set
   console.log("[main] load-vault path =", vaultPath);
@@ -108,8 +123,6 @@ ipcMain.handle("get-image-path", (_e, { folder, filename }) => {
 
 // WRITE (autosave) + BROADCAST
 ipcMain.handle("save-item", async (_evt, payload) => {
-  const vaultPath =
-    process.env.MENHIR_VAULT || path.join(app.getAppPath(), "vault");
   const filePath = path.join(vaultPath, payload.type, `${payload.slug}.md`);
   if (!fs.existsSync(filePath)) throw new Error("File not found: " + filePath);
 

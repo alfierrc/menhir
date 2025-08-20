@@ -2,12 +2,10 @@ import { renderGrid } from "../features/card-grid/index.js";
 
 let allItems = [];
 let filteredItems = [];
-let isAnimating = false; // <— block hover while animating
-
-// at top of renderer.js (near isAnimating)
+let isAnimating = false;
 let currentFilter = "all";
 
-// helpers (keep your versions; add the transform helpers)
+// --- Helper functions ---
 function setHoverPreview(grid, filter) {
   if (isAnimating) return;
   grid.querySelectorAll(".wrapper").forEach((card) => {
@@ -15,13 +13,11 @@ function setHoverPreview(grid, filter) {
     card.style.opacity = filter === "all" || t === filter ? "1" : "0.2";
   });
 }
-
 function clearHoverPreview(grid) {
   grid.querySelectorAll(".wrapper").forEach((card) => {
     card.style.opacity = "1";
   });
 }
-
 function applyHoverScale(grid) {
   if (isAnimating) return;
   grid.querySelectorAll(".wrapper").forEach((card) => {
@@ -31,70 +27,25 @@ function applyHoverScale(grid) {
     card.style.transform = "scale(0.98)";
   });
 }
-
 function clearHoverScale(grid) {
   grid.querySelectorAll(".wrapper").forEach((card) => {
-    // only clear if not in the middle of a FLIP
     if (!isAnimating) card.style.transform = "none";
   });
 }
 
-// --- FLIP helpers ---
-function capturePositions(gridEl) {
-  const map = new Map();
-  gridEl.querySelectorAll(".wrapper[data-key]").forEach((el) => {
-    map.set(el.dataset.key, el.getBoundingClientRect());
-  });
-  return map;
-}
-
-function animateFlip(gridEl, beforeRects) {
-  const wrappers = Array.from(gridEl.querySelectorAll(".wrapper[data-key]"));
-
-  // invert
-  wrappers.forEach((el) => {
-    const key = el.dataset.key;
-    const before = beforeRects.get(key);
-    if (!before) {
-      // new element: start from small+transparent
-      el.classList.add("is-entering");
-      el.style.opacity = "0";
-      el.style.transform = "scale(0.96)";
-      return;
-    }
-    const after = el.getBoundingClientRect();
-    const dx = before.left - after.left;
-    const dy = before.top - after.top;
-    if (dx || dy) {
-      el.style.transform = `translate(${dx}px, ${dy}px)`;
-    }
-  });
-
-  // play
-  requestAnimationFrame(() => {
-    wrappers.forEach((el) => {
-      if (el.classList.contains("is-entering")) {
-        // allow initial styles to apply, then reveal
-        requestAnimationFrame(() => {
-          el.style.transition = "transform 1000ms ease, opacity 200ms ease";
-          el.classList.remove("is-entering");
-          el.style.opacity = "1";
-          el.style.transform = "none";
-        });
-      } else {
-        el.style.transform = "none";
-      }
-    });
-  });
-}
-
+// --- Main Application Logic ---
 window.addEventListener("DOMContentLoaded", async () => {
+  // --- Get references to all DOM elements ---
   const grid = document.getElementById("grid");
   const spinner = document.getElementById("spinner");
-  const filtersEl = document.getElementById("filters"); // your buttons container
-
+  const filtersEl = document.getElementById("filters");
   const themeToggle = document.getElementById("themeToggle");
+  const settingsBtn = document.getElementById("settingsBtn");
+  const settingsPanel = document.getElementById("settings-panel");
+  const vaultPathDisplay = document.getElementById("vaultPathDisplay");
+  const changeVaultBtn = document.getElementById("changeVaultBtn");
 
+  // --- Theme Logic ---
   function applyTheme(theme) {
     const root = document.documentElement;
     if (theme === "dark") {
@@ -102,124 +53,169 @@ window.addEventListener("DOMContentLoaded", async () => {
     } else if (theme === "light") {
       root.setAttribute("data-theme", "light");
     } else {
-      root.removeAttribute("data-theme"); // fall back to system
+      root.removeAttribute("data-theme");
     }
-    // update button label/state
     if (themeToggle) {
       const isDark =
         theme === "dark" ||
-        (!theme &&
-          window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches);
-      themeToggle.textContent = isDark ? "Light" : "Dark";
+        (!theme && window.matchMedia?.("(prefers-color-scheme: dark)").matches);
       themeToggle.setAttribute("aria-pressed", String(isDark));
     }
   }
 
-  // initial theme: saved -> system
-  const saved = localStorage.getItem("menhir.theme"); // "dark" | "light" | null
-  applyTheme(saved);
-
-  // react to system changes only when not explicitly set
+  // Setup theme on initial load and for system changes
+  const savedTheme = localStorage.getItem("menhir.theme");
+  applyTheme(savedTheme);
   if (window.matchMedia) {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     mq.addEventListener?.("change", () => {
       if (!localStorage.getItem("menhir.theme")) applyTheme(null);
     });
   }
-
-  // toggle click handler
   if (themeToggle) {
     themeToggle.addEventListener("click", () => {
-      const current = document.documentElement.getAttribute("data-theme"); // "dark" | "light" | null
-      let next;
-      if (!current) {
-        // currently following system — flip to the opposite explicitly
-        const systemDark =
-          window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches;
-        next = systemDark ? "light" : "dark";
-      } else {
-        next = current === "dark" ? "light" : "dark";
-      }
+      const current = document.documentElement.getAttribute("data-theme");
+      const systemDark = window.matchMedia?.(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+      const next = !current
+        ? systemDark
+          ? "light"
+          : "dark"
+        : current === "dark"
+        ? "light"
+        : "dark";
       localStorage.setItem("menhir.theme", next);
       applyTheme(next);
     });
   }
 
+  // --- Settings Panel Logic ---
+  window.api.getVaultPath().then((path) => {
+    vaultPathDisplay.textContent = path;
+  });
+  settingsBtn.addEventListener("click", () => {
+    settingsPanel.classList.toggle("is-open");
+  });
+  changeVaultBtn.addEventListener("click", async () => {
+    const newPath = await window.api.changeVaultPath();
+    if (newPath) {
+      vaultPathDisplay.textContent = newPath;
+      settingsPanel.classList.remove("is-open");
+    }
+  });
+  window.addEventListener("click", (event) => {
+    if (
+      settingsPanel.classList.contains("is-open") &&
+      !settingsPanel.contains(event.target) &&
+      !settingsBtn.contains(event.target)
+    ) {
+      settingsPanel.classList.remove("is-open");
+    }
+  });
+
+  // --- Main Data Loading and Event Listeners ---
   try {
+    // Initial load
+    allItems = await window.api.loadVault();
+    allItems.sort((a, b) => (b.sortTs || 0) - (a.sortTs || 0));
+    filteredItems = [...allItems];
+    grid.classList.add("catalog");
+    await renderGrid(grid, filteredItems);
+    if (spinner) spinner.setAttribute("aria-hidden", "true");
+
+    // Listener for single item updates (from autosave)
+    window.api.onItemUpdated((fresh) => {
+      const idx = allItems.findIndex(
+        (it) =>
+          it.slug === fresh.slug &&
+          (it.folder || it.type) === (fresh.folder || fresh.type)
+      );
+      if (idx >= 0) {
+        allItems[idx] = { ...allItems[idx], ...fresh };
+      } else {
+        allItems.unshift(fresh);
+      }
+      filteredItems =
+        currentFilter === "all"
+          ? [...allItems]
+          : allItems.filter(
+              (it) =>
+                (it.type || "").toLowerCase() === currentFilter.toLowerCase()
+            );
+      filteredItems.sort((a, b) => (b.sortTs || 0) - (a.sortTs || 0));
+      renderGrid(grid, filteredItems);
+    });
+
+    // Combined reload function for vault changes and external captures
+    const reloadVault = async () => {
+      allItems = await window.api.loadVault();
+      allItems.sort((a, b) => (b.sortTs || 0) - (a.sortTs || 0));
+      filteredItems =
+        currentFilter === "all"
+          ? [...allItems]
+          : allItems.filter(
+              (it) =>
+                (it.type || "").toLowerCase() === currentFilter.toLowerCase()
+            );
+      renderGrid(grid, filteredItems);
+    };
+
     window.api.onVaultRefresh(async () => {
-      // Reload the vault data
+      console.log("RENDERER: Refresh signal received, reloading vault..."); // For debugging
+
+      if (spinner) spinner.setAttribute("aria-hidden", "false");
+
       allItems = await window.api.loadVault();
       allItems.sort((a, b) => (b.sortTs || 0) - (a.sortTs || 0));
 
-      // Re-apply the current filter and re-render the grid
       const filter = currentFilter || "all";
       filteredItems =
         filter === "all"
           ? [...allItems]
-          : allItems.filter((it) => it.type === filter);
-      renderGrid(grid, filteredItems);
+          : allItems.filter(
+              (it) => (it.type || "").toLowerCase() === filter.toLowerCase()
+            );
+
+      await renderGrid(grid, filteredItems);
+
+      if (spinner) spinner.setAttribute("aria-hidden", "true");
     });
-    // load + sort newest → oldest
-    allItems = await window.api.loadVault();
-    allItems.sort((a, b) => (b.sortTs || 0) - (a.sortTs || 0));
-    filteredItems = [...allItems];
 
-    // catalog class (for your CSS)
-    grid.classList.add("catalog");
-
-    // initial render
-    await renderGrid(grid, filteredItems);
-    if (spinner) spinner.setAttribute("aria-hidden", "true");
-
-    // 🔁 Live update when any item is saved
-    if (window.api?.onItemUpdated) {
-      window.api.onItemUpdated((fresh) => {
-        // Merge into allItems by slug+folder (stable identity in your app)
-        const match = (it) =>
-          it.slug === fresh.slug &&
-          (it.folder || it.type) === (fresh.folder || fresh.type);
-
-        const idx = allItems.findIndex(match);
-        if (idx >= 0) {
-          allItems[idx] = { ...allItems[idx], ...fresh };
-        } else {
-          allItems.unshift(fresh); // new item? unlikely from autosave, but safe
-        }
-
-        // Recompute the filtered view using the active filter
-        const active = (currentFilter || "all").toLowerCase();
-        filteredItems =
-          active === "all"
-            ? [...allItems]
-            : allItems.filter((it) => (it.type || "").toLowerCase() === active);
-
-        // Keep your newest → oldest ordering
-        filteredItems.sort((a, b) => (b.sortTs || 0) - (a.sortTs || 0));
-
-        // Re-render grid (renderGrid preserves/flips nodes smoothly)
-        renderGrid(grid, filteredItems);
-      });
-    }
-
-    // hover preview fade (optional; remove if you already did this elsewhere)
+    // --- Filter Bar Logic (Consolidated)---
     if (filtersEl) {
+      filtersEl
+        .querySelector('button[data-filter="all"]')
+        .classList.add("is-active");
+
+      // Click handler
+      filtersEl.addEventListener("click", async (e) => {
+        if (!e.target.matches("button")) return;
+        filtersEl.querySelector(".is-active")?.classList.remove("is-active");
+        e.target.classList.add("is-active");
+        const filter = e.target.getAttribute("data-filter");
+        currentFilter = filter;
+        filteredItems =
+          filter === "all"
+            ? [...allItems]
+            : allItems.filter(
+                (it) => (it.type || "").toLowerCase() === filter.toLowerCase()
+              );
+        await renderGrid(grid, filteredItems);
+      });
+
+      // Hover handler
       filtersEl.addEventListener("mouseover", (e) => {
         if (!e.target.matches("button")) return;
         if (isAnimating) return;
         const hoverFilter = e.target.getAttribute("data-filter");
         if (hoverFilter === currentFilter) return;
-
         if (currentFilter === "all") {
-          // classic preview: dim non-matching
           setHoverPreview(grid, hoverFilter);
         } else {
-          // when a specific filter is active, just scale everything slightly
           applyHoverScale(grid);
         }
       });
-
       filtersEl.addEventListener("mouseout", () => {
         if (isAnimating) return;
         if (currentFilter === "all") {
@@ -227,77 +223,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         } else {
           clearHoverScale(grid);
         }
-      });
-    }
-
-    // click → filter with FLIP
-    if (filtersEl) {
-      filtersEl.addEventListener("click", async (e) => {
-        if (!e.target.matches("button")) return;
-        const filter = e.target.getAttribute("data-filter");
-
-        currentFilter = filter; // <-- track active filter
-        isAnimating = true;
-        clearHoverPreview(grid);
-        clearHoverScale(grid);
-
-        grid.classList.add("animating"); // (you already use this in FLIP CSS)
-
-        // 1) capture BEFORE rects
-        const beforeRects = capturePositions(grid); // your helper
-
-        // 2) compute filtered
-        filteredItems =
-          filter === "all"
-            ? [...allItems]
-            : allItems.filter(
-                (it) => (it.type || "").toLowerCase() === filter.toLowerCase()
-              );
-
-        // 3) re-render (using your reconciler version of renderGrid if you added it)
-        await renderGrid(grid, filteredItems);
-
-        // 4) FLIP animate
-        // disable transitions first
-        grid.querySelectorAll(".wrapper").forEach((el) => {
-          el.style.transition = "none";
-        });
-        const afterRects = capturePositions(grid);
-        grid.querySelectorAll(".wrapper").forEach((el) => {
-          const key = el.dataset.key;
-          const before = beforeRects.get(key);
-          const after = afterRects.get(key);
-          if (before) {
-            const dx = before.left - after.left;
-            const dy = before.top - after.top;
-            el.style.transform = `translate(${dx}px, ${dy}px)`;
-            el.style.opacity = "1"; // ensure no residual .2 from hover
-          } else {
-            // entering
-            el.style.transform = "scale(0.96)";
-            el.style.opacity = "0";
-          }
-        });
-
-        // force reflow
-        // eslint-disable-next-line no-unused-expressions
-        grid.offsetHeight;
-
-        // play
-        grid.querySelectorAll(".wrapper").forEach((el) => {
-          el.style.transition = "transform 500ms ease, opacity 200ms ease";
-          el.style.transform = "none";
-          el.style.opacity = "1";
-        });
-
-        // 🔓 re-enable hover after animation ends
-        setTimeout(() => {
-          grid.querySelectorAll(".wrapper").forEach((el) => {
-            el.style.transition = "";
-          });
-          grid.classList.remove("animating");
-          isAnimating = false;
-        }, 320);
       });
     }
   } catch (e) {
