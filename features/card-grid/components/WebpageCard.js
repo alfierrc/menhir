@@ -75,7 +75,7 @@ export function createWebpageCard(item) {
 
   // listen for click
   wrap.addEventListener("click", () => openModalForItem(item));
-  wrap.dataset.type = "product";
+  wrap.dataset.type = "webpage";
 
   return wrap;
 }
