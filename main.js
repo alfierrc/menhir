@@ -59,9 +59,13 @@ async function handleCaptureUrl(captureUrl) {
     // 1. Create the new, human-readable slug
     const slug = `${slugify(title)}-${Date.now()}`;
 
-    let frontmatter = { title };
+    let frontmatter = {
+      title: title,
+      added: new Date().toISOString(), // 3. Add the timestamp here
+    };
     if (params.has("source")) frontmatter.source = params.get("source");
     if (params.has("price")) frontmatter.price = params.get("price");
+    if (params.has("currency")) frontmatter.currency = params.get("currency");
 
     // 2. --- Image Downloading Logic ---
     if (params.has("image")) {

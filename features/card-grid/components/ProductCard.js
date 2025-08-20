@@ -52,8 +52,8 @@ export function createProductCard(item) {
   if (item.price) {
     const priceBox = document.createElement("div");
     priceBox.className = "price-box";
-    // You can format the price here, for example, by adding a currency symbol
-    priceBox.textContent = `$${item.price}`;
+    // Change this line
+    priceBox.textContent = `${item.currency || "$"}${item.price}`;
     media.appendChild(priceBox);
   }
 
