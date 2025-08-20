@@ -4,15 +4,20 @@ const {
   ipcMain,
   protocol,
   Notification,
+  dialog,
 } = require("electron");
 const path = require("path");
-const fs = require("fs").promises; // Use async file system
+const fs = require("fs");
+const fsp = require("fs").promises; // Use async file system
 const matter = require("gray-matter");
+const Store = require("electron-store").default;
 const { pathToFileURL } = require("url");
 const { scanVault } = require("./lib/vaultReader");
 
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+const store = new Store();
 let win;
+let vaultPath;
 
 // --- SINGLE INSTANCE LOCK ---
 // Ensures only one instance of the app runs. This is the fix for the launch error.
@@ -86,16 +91,14 @@ function createWindow() {
 }
 
 ipcMain.handle("load-vault", async () => {
-  const vaultPath =
-    process.env.MENHIR_VAULT || path.join(app.getAppPath(), "vault");
+  if (!vaultPath) return []; // Don't try to load if a vault hasn't been set
   console.log("[main] load-vault path =", vaultPath);
   try {
     const items = await scanVault(vaultPath);
-    console.log("[main] items =", items.length);
     return items;
   } catch (e) {
     console.error("[main] scan error", e);
-    return []; // never reject — UI must render even if empty
+    return [];
   }
 });
 
@@ -171,23 +174,38 @@ ipcMain.handle("save-item", async (_evt, payload) => {
   return { ok: true, item: savedItem, saved: Object.keys(updates) };
 });
 
-// In main.js
+app.whenReady().then(async () => {
+  // 1. Check for a saved vault path
+  let savedPath = store.get("vaultPath");
 
-// In main.js
+  // 2. If no valid path is saved, prompt the user to select one
+  if (!savedPath || !fs.existsSync(savedPath)) {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      title: "Select Vault Folder",
+      buttonLabel: "Use This Folder",
+      properties: ["openDirectory", "createDirectory"],
+    });
 
-// In main.js
+    if (canceled || filePaths.length === 0) {
+      // If the user cancels, the app can't continue.
+      app.quit();
+      return;
+    }
 
-app.whenReady().then(() => {
-  // Use the robust app.getPath() here as well
-  const vaultPath =
-    process.env.MENHIR_VAULT || path.join(app.getAppPath(), "vault");
+    savedPath = filePaths[0];
+    store.set("vaultPath", savedPath); // Save the choice for future launches
+  }
+
+  // 3. Set the global vaultPath for the rest of the app to use
+  vaultPath = savedPath;
+
+  // 4. Now, run the rest of your original startup logic
   protocol.registerFileProtocol("local-resource", (request, callback) => {
     const url = request.url.replace("local-resource://", "");
     const filePath = path.join(vaultPath, url);
     callback(filePath);
   });
 
-  // Handler for macOS
   app.on("open-url", (event, url) => {
     if (url.startsWith("menhir://")) {
       event.preventDefault();
@@ -195,7 +213,6 @@ app.whenReady().then(() => {
     }
   });
 
-  // Simplified protocol registration
   app.setAsDefaultProtocolClient("menhir");
 
   createWindow();
