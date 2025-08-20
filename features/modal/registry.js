@@ -6,5 +6,6 @@ export const MODAL_VIEWS = {
   image: renderImageView,
   note: renderNoteView,
   product: renderProductView,
+  webpage: renderWebpageView,
   _: renderNoteView, // fallback for unknown types
 };

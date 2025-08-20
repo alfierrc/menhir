@@ -1,12 +1,14 @@
 import { createImageCard } from "./components/ImageCard.js";
 import { createProductCard } from "./components/ProductCard.js";
 import { createNoteCard } from "./components/NoteCard.js";
+import { createWebpageCard } from "./components/WebpageCard.js";
 import DOMPurify from "dompurify";
 
 const buildByType = {
   image: createImageCard,
   product: createProductCard,
   note: createNoteCard,
+  webpage: createWebpageCard,
 };
 
 function getKey(item) {

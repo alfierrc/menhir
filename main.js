@@ -42,9 +42,14 @@ async function handleCaptureUrl(captureUrl) {
     const params = url.searchParams;
     const title = params.get("title") || "Untitled Capture";
     const slug = `capture-${Date.now()}`;
-    const frontmatter = { title, source: params.get("url"), tags: [] };
+    const frontmatter = {
+      type: "webpage",
+      title,
+      source: params.get("url"),
+      tags: [],
+    };
     const fileContents = matter.stringify("", frontmatter);
-    const noteDir = path.join(vaultPath, "note");
+    const noteDir = path.join(vaultPath, "webpage");
     await fsp.mkdir(noteDir, { recursive: true });
     const filePath = path.join(noteDir, `${slug}.md`);
     await fsp.writeFile(filePath, fileContents, "utf8");
