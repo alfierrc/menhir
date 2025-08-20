@@ -94,13 +94,12 @@ function createWindow() {
     },
   });
 
-  // Load from the Vite dev server in development, or load the built file in production
   if (VITE_DEV_SERVER_URL) {
-    // Append the correct path to the dev server URL
-    win.loadURL(`${VITE_DEV_SERVER_URL}/app/index.html`);
+    // The main entry point is now the server root
+    win.loadURL(VITE_DEV_SERVER_URL);
   } else {
-    // The production build path is now correct based on the new Vite config
-    win.loadFile(path.join(__dirname, "../dist/app/index.html"));
+    // The built HTML will now be at dist/index.html
+    win.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 }
 

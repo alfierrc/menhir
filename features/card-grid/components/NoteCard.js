@@ -1,4 +1,5 @@
 import { openModalForItem } from "../../modal/index.js";
+import DOMPurify from "dompurify";
 
 export function createNoteCard(item) {
   // define wrapper and card
@@ -36,10 +37,8 @@ export function createNoteCard(item) {
 
   // Choose excerpt content
   if (item.content) {
-    // 1. Strip markdown characters but keep line breaks
-    const clean = item.content.replace(/[#*_>\-`]/g, "").trim();
-
-    // 2. Truncate to a character limit
+    const sanitized = DOMPurify.sanitize(item.content, { ALLOWED_TAGS: [] });
+    const clean = sanitized.replace(/[#*_>\-`]/g, "").trim();
     const maxLength = 140;
     let truncated = clean;
     if (clean.length > maxLength) {

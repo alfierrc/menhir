@@ -1,6 +1,7 @@
 import { createImageCard } from "./components/ImageCard.js";
 import { createProductCard } from "./components/ProductCard.js";
 import { createNoteCard } from "./components/NoteCard.js";
+import DOMPurify from "dompurify";
 
 const buildByType = {
   image: createImageCard,
@@ -50,7 +51,12 @@ function updateNodeForItem(node, item) {
     const ex = node.querySelector(".note-excerpt");
     if (ex) {
       if (item.content) {
-        const clean = item.content.replace(/[#*_>\-`]/g, "").trim();
+        // 1. Sanitize first to strip any potential HTML tags
+        const sanitized = DOMPurify.sanitize(item.content, {
+          ALLOWED_TAGS: [],
+        });
+        // 2. Then remove markdown characters
+        const clean = sanitized.replace(/[#*_>\-`]/g, "").trim();
         const maxLength = 140;
         let truncated = clean;
         if (clean.length > maxLength) {
