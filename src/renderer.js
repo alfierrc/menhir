@@ -147,6 +147,24 @@ window.addEventListener("DOMContentLoaded", async () => {
       renderGrid(grid, filteredItems);
     });
 
+    // item delete function
+    window.api.onItemDeleted(({ type, slug }) => {
+      // Remove the item from the main data array
+      allItems = allItems.filter(
+        (it) => !(it.type === type && it.slug === slug)
+      );
+
+      // Re-filter and re-render the grid
+      const filter = currentFilter || "all";
+      filteredItems =
+        filter === "all"
+          ? [...allItems]
+          : allItems.filter(
+              (it) => (it.type || "").toLowerCase() === filter.toLowerCase()
+            );
+      renderGrid(grid, filteredItems);
+    });
+
     // Combined reload function for vault changes and external captures
     const reloadVault = async () => {
       allItems = await window.api.loadVault();

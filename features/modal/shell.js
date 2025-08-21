@@ -41,8 +41,20 @@ export function createShell() {
   const body = document.createElement("div");
   body.className = "modal-body";
 
+  const footer = document.createElement("div");
+  footer.className = "modal-footer";
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "modal-delete-btn";
+  deleteBtn.textContent = "Delete";
+
+  footer.appendChild(deleteBtn);
+  // --- End of new elements ---
+
   right.appendChild(header);
   right.appendChild(body);
+  right.appendChild(footer); // Add the footer to the bottom of the right panel
+
   modal.appendChild(left);
   modal.appendChild(right);
   overlay.appendChild(modal);
@@ -75,6 +87,7 @@ export function createShell() {
       status, // <-- expose status element
     },
     close,
+    deleteBtn,
   };
 }
 

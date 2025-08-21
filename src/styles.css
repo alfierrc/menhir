@@ -544,7 +544,31 @@ body.modal-open {
   color: var(--panel);
 }
 
-/* In app/styles.css */
+/* In src/styles.css, can go in the Modal section */
+
+.modal-footer {
+  padding: 12px 16px;
+  margin-top: auto; /* Pushes the footer to the bottom */
+  border-top: 1px solid var(--rule);
+  display: flex;
+  justify-content: flex-end; /* Aligns items to the right */
+}
+
+.modal-delete-btn {
+  background: none;
+  border: 1px solid #c94040;
+  color: #c94040;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.modal-delete-btn:hover {
+  background: #c94040;
+  color: white;
+}
 
 /* --- Styles for Inline Tag Editing Animation --- */
 

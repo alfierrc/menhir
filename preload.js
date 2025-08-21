@@ -15,5 +15,11 @@ const { contextBridge, ipcRenderer } = require("electron");
     onVaultRefresh: (cb) => ipcRenderer.on("vault:refresh-needed", () => cb()),
     getVaultPath: () => ipcRenderer.invoke("get-vault-path"),
     changeVaultPath: () => ipcRenderer.invoke("change-vault-path"),
+    deleteItem: (type, slug) =>
+      ipcRenderer.invoke("delete-item", { type, slug }),
+    onItemDeleted: (cb) =>
+      ipcRenderer.on("vault:item-deleted", (_e, { type, slug }) =>
+        cb({ type, slug })
+      ),
   });
 })();

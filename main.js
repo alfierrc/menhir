@@ -163,6 +163,36 @@ ipcMain.handle("save-item", async (_evt, payload) => {
   // ... (rest of your save-item function remains the same)
 });
 
+ipcMain.handle("delete-item", async (_evt, { type, slug }) => {
+  try {
+    const mdFilePath = path.join(vaultPath, type, `${slug}.md`);
+
+    // Before deleting the markdown file, read it one last time to see if it has an image
+    if (fs.existsSync(mdFilePath)) {
+      const raw = fs.readFileSync(mdFilePath, "utf8");
+      const fm = matter(raw);
+
+      if (fm.data.image) {
+        const imageFilePath = path.join(vaultPath, type, fm.data.image);
+        if (fs.existsSync(imageFilePath)) {
+          await fsp.unlink(imageFilePath); // Delete the image file
+          console.log(`Deleted image: ${imageFilePath}`);
+        }
+      }
+
+      await fsp.unlink(mdFilePath); // Delete the markdown file
+      console.log(`Deleted item: ${mdFilePath}`);
+    }
+
+    // Tell the renderer to remove this item from the grid
+    win?.webContents.send("vault:item-deleted", { type, slug });
+    return { ok: true };
+  } catch (e) {
+    console.error("Failed to delete item:", e);
+    return { ok: false, error: e.message };
+  }
+});
+
 // --- APP STARTUP ---
 app.whenReady().then(async () => {
   let savedPath = store.get("vaultPath");
