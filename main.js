@@ -66,6 +66,7 @@ async function handleCaptureUrl(captureUrl) {
     if (params.has("source")) frontmatter.source = params.get("source");
     if (params.has("price")) frontmatter.price = params.get("price");
     if (params.has("currency")) frontmatter.currency = params.get("currency");
+    if (params.has("vendor")) frontmatter.vendor = params.get("vendor");
 
     // 2. --- Image Downloading Logic ---
     if (params.has("image")) {
