@@ -101,6 +101,8 @@ export function createGenericView(config = {}) {
         "tags",
         "sortTs",
         "date",
+        "added",
+        "source",
       ]);
       Object.entries(item).forEach(([k, v]) => {
         if (skip.has(k) || v == null || v === "") return;
