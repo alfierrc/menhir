@@ -571,7 +571,7 @@ body.modal-open {
 }
 
 .tag-pill:hover {
-  filter: brightness(80%);
+  background-color: color-mix(in srgb, var(--rule) 80%, black);
 }
 
 .delete-tag-btn {
