@@ -30,7 +30,7 @@ export function createGenericView(config = {}) {
       const editorElement = document.createElement("div");
       scroller.appendChild(editorElement);
       slots.left.appendChild(scroller);
-      new Editor({
+      const editor = new Editor({
         el: editorElement,
         initialValue: item.content || "",
         previewStyle: "tab",
@@ -40,8 +40,8 @@ export function createGenericView(config = {}) {
         hideModeSwitch: true,
         theme: editorTheme,
         events: {
-          change: (e) => {
-            autosave({ content: e.getMarkdown() });
+          change: () => {
+            autosave({ content: editor.getMarkdown() });
           },
         },
       });

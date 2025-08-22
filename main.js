@@ -160,7 +160,55 @@ ipcMain.handle("get-image-path", (_e, { folder, filename }) => {
 ipcMain.handle("save-item", async (_evt, payload) => {
   if (!vaultPath) throw new Error("Vault path is not set.");
   const filePath = path.join(vaultPath, payload.type, `${payload.slug}.md`);
-  // ... (rest of your save-item function remains the same)
+
+  try {
+    const raw = await fsp.readFile(filePath, "utf8");
+    const { data: currentData, content: currentContent } = matter(raw);
+
+    // Combine the old and new data
+    const nextData = { ...currentData, ...payload.updates };
+    const nextContent =
+      payload.updates.content !== undefined
+        ? payload.updates.content
+        : currentContent;
+
+    // Ensure tags are always a clean array
+    if (nextData.tags) {
+      nextData.tags = Array.isArray(nextData.tags)
+        ? nextData.tags
+        : String(nextData.tags)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+    }
+
+    // Write the updated file to disk
+    const out = matter.stringify(nextContent, nextData);
+    await fsp.writeFile(filePath, out, "utf8");
+
+    // Get file stats for sorting
+    const stat = await fsp.stat(filePath);
+    const fmDate = new Date(nextData.added || nextData.date || stat.mtime);
+    const sortTs = fmDate.getTime();
+
+    // Construct the updated item object to send back to the UI
+    const updatedItem = {
+      type: payload.type,
+      slug: payload.slug,
+      folder: payload.type,
+      ...nextData,
+      content: nextContent,
+      sortTs: sortTs,
+    };
+
+    // Broadcast the fully updated item to all windows
+    win?.webContents.send("vault:item-updated", updatedItem);
+
+    return { ok: true, item: updatedItem };
+  } catch (e) {
+    console.error("Failed to save item:", e);
+    return { ok: false, error: e.message };
+  }
 });
 
 ipcMain.handle("delete-item", async (_evt, { type, slug }) => {
