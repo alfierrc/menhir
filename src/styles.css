@@ -452,6 +452,41 @@ header {
   cursor: default; /* Change cursor to a pointer */
 }
 
+/* --- Styles for Source Link Pill --- */
+.info-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--rule);
+  color: var(--ink);
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  max-width: 150px; /* Adjust as needed */
+  transition: background-color 150ms ease;
+}
+
+.info-source:hover {
+  background-color: color-mix(in srgb, var(--rule) 80%, black);
+}
+
+/* Truncate the text inside the pill */
+.info-source span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Style the SVG icon */
+.info-source svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  fill: none;
+  flex-shrink: 0; /* Prevent the icon from shrinking */
+}
+
 .modal-section {
   padding: 12px 16px;
 }
