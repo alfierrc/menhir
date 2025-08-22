@@ -438,6 +438,20 @@ header {
   cursor: pointer;
 }
 
+/* --- Styles for Modal Info Line --- */
+.info-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 4px; /* Space it out from the title */
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+.info-date {
+  cursor: default; /* Change cursor to a pointer */
+}
+
 .modal-section {
   padding: 12px 16px;
 }

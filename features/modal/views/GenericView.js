@@ -5,6 +5,7 @@ import { renderTags } from "../components/TagEditor.js";
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import "@toast-ui/editor/dist/theme/toastui-editor-dark.css";
+import { createInfoLine } from "../components/InfoLine.js"; //
 
 // This is our factory function
 export function createGenericView(config = {}) {
@@ -76,6 +77,10 @@ export function createGenericView(config = {}) {
 
     slots.header.innerHTML = "";
     slots.header.appendChild(titleInput);
+
+    // Add the new info line for date and source
+    const infoLine = createInfoLine(item);
+    slots.header.appendChild(infoLine);
 
     // Metadata Section
     const kv = document.createElement("div");
