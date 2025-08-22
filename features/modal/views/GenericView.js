@@ -61,17 +61,19 @@ export function createGenericView(config = {}) {
     titleInput.type = "text";
     titleInput.value = item.title || item.slug || "Untitled";
     titleInput.className = "modal-title-input";
-    Object.assign(titleInput.style, {
-      width: "100%",
-      font: "inherit",
-      border: "none",
-      background: "transparent",
-      color: "var(--ink)",
-      outline: "none",
-    });
+    // Base styles are now in CSS, we only need JS for behavior
     titleInput.addEventListener("input", () =>
       autosave({ title: titleInput.value })
     );
+
+    // Add focus/blur events to handle the ellipsis
+    titleInput.addEventListener("focus", () => {
+      titleInput.style.textOverflow = "clip";
+    });
+    titleInput.addEventListener("blur", () => {
+      titleInput.style.textOverflow = "ellipsis";
+    });
+
     slots.header.innerHTML = "";
     slots.header.appendChild(titleInput);
 
