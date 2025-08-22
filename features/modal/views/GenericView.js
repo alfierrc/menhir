@@ -140,6 +140,34 @@ export function createGenericView(config = {}) {
       slots.body.appendChild(notes);
     }
 
+    // --- Footer Logic ---
+    // "See All Properties" Button
+    const allPropsBtn = document.createElement("button");
+    allPropsBtn.className = "modal-props-btn";
+    allPropsBtn.textContent = "Properties";
+
+    const yamlContainer = document.createElement("div");
+    yamlContainer.className = "modal-yaml-container";
+    const yamlPre = document.createElement("pre");
+
+    // Create the YAML string from the item's data
+    const frontmatter = { ...item };
+    delete frontmatter.content; // Exclude the main content body
+    yamlPre.textContent = Object.entries(frontmatter)
+      .map(([key, value]) => `${key}: ${JSON.stringify(value, null, 2)}`)
+      .join("\n");
+
+    yamlContainer.appendChild(yamlPre);
+    slots.body.appendChild(yamlContainer); // Add the hidden container
+
+    allPropsBtn.addEventListener("click", () => {
+      yamlContainer.classList.toggle("is-open");
+    });
+
+    // Add the new button to the footer
+    const footer = deleteBtn.parentElement;
+    footer.insertBefore(allPropsBtn, deleteBtn);
+
     // Delete Button Logic
     deleteBtn.addEventListener("click", () => {
       if (

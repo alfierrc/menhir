@@ -626,6 +626,53 @@ body.modal-open {
   justify-content: flex-end; /* Aligns items to the right */
 }
 
+/* --- Updated Modal Footer & Properties Viewer --- */
+.modal-footer {
+  padding: 12px 16px;
+  margin-top: auto;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  align-items: center; /* Vertically align items */
+  gap: 12px; /* Space between buttons */
+}
+
+/* button for showing properties */
+.modal-props-btn {
+  background: none;
+  border: 1px solid var(--rule);
+  color: var(--ink-dim);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.modal-props-btn:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+/* The hidden container for the YAML */
+.modal-yaml-container {
+  display: none; /* Hidden by default */
+  background-color: var(--rule);
+  border-radius: 4px;
+  margin: 0 16px 12px; /* Position it above the footer */
+}
+.modal-yaml-container.is-open {
+  display: block; /* Show when toggled */
+}
+.modal-yaml-container pre {
+  margin: 0;
+  padding: 12px;
+  font-family: necto, monospace;
+  font-size: 11px;
+  color: var(--ink-dim);
+  max-height: 200px;
+  overflow: auto;
+}
+
 .modal-delete-btn {
   background: none;
   border: 1px solid #c94040;

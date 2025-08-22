@@ -35,7 +35,6 @@ export function createShell() {
   closeBtn.textContent = "✕";
 
   header.appendChild(titleWrap);
-  header.appendChild(status);
   header.appendChild(closeBtn);
 
   const body = document.createElement("div");
@@ -48,7 +47,12 @@ export function createShell() {
   deleteBtn.className = "modal-delete-btn";
   deleteBtn.textContent = "Delete";
 
-  footer.appendChild(deleteBtn);
+  const spacer = document.createElement("div");
+  spacer.style.flexGrow = "1"; // This will push the delete button to the right
+
+  footer.appendChild(status); // Add the status indicator here
+  footer.appendChild(spacer); // Add the spacer
+  footer.appendChild(deleteBtn); // Then the delete button
   // --- End of new elements ---
 
   right.appendChild(header);
