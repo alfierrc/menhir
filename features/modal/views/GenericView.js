@@ -103,6 +103,8 @@ export function createGenericView(config = {}) {
         "date",
         "added",
         "source",
+        "price",
+        "currency",
       ]);
       Object.entries(item).forEach(([k, v]) => {
         if (skip.has(k) || v == null || v === "") return;
