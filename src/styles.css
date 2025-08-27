@@ -178,7 +178,36 @@ header {
   scale: 101%; */
 }
 
+/* card meta headers */
+
 .item-header {
+  width: 100%;
+  padding-bottom: 10px;
+}
+
+.grid .log-meta {
+  font-size: 12px; /* Slightly larger base font */
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.item-catalogue-id {
+  font-family: necto, monospace; /* Use your mono font */
+  font-size: 11px;
+  color: var(--ink-dim);
+  margin-bottom: 2px;
+}
+
+.item-title {
+  font-weight: 600;
+  /* Add truncation for long titles */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* OLD */
+/* .item-header {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(10, 1fr);
@@ -186,17 +215,12 @@ header {
 }
 
 .grid .log-meta {
-  /* font-family: "necto"; */
   font-size: 10px;
   line-height: 1.5;
   margin: 0 0 2px;
   color: var(--ink);
   grid-column: 1 /11;
-}
-
-.grid .type-icon {
-  grid-column: 9 / 11;
-}
+} */
 
 /* The tile itself becomes just the cover image frame; no shadow/border */
 .grid.catalog .card {

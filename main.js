@@ -56,10 +56,16 @@ async function handleCaptureUrl(captureUrl) {
     const itemType = params.get("type") || "webpage";
     const title = params.get("title") || "Untitled Capture";
 
+    const timestamp = Date.now();
+    const catalogueId = `${itemType.toUpperCase().substring(0, 4)}-${timestamp
+      .toString()
+      .slice(-6)}`;
+
     // 1. Create the new, human-readable slug
     const slug = `${slugify(title)}-${Date.now()}`;
 
     let frontmatter = {
+      catalogueId: catalogueId,
       title: title,
       added: new Date().toISOString(), // 3. Add the timestamp here
     };

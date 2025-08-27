@@ -1,5 +1,6 @@
 import { openModalForItem } from "../../modal/index.js";
 import DOMPurify from "dompurify";
+import { createCardHeader } from "./CardHeader.js";
 
 export function createNoteCard(item) {
   // define wrapper and card
@@ -17,15 +18,9 @@ export function createNoteCard(item) {
   const card = document.createElement("article");
   card.className = "card note-card";
 
-  // create and append meta
-  const logMeta = document.createElement("div");
-  logMeta.className = "log-meta";
-  const title = document.createElement("div");
-  title.textContent = item.title || item.slug;
-  const date = document.createElement("div");
-  date.textContent = item.date;
-  logMeta.append(title, date);
-  wrap.appendChild(logMeta);
+  // create header
+  const header = createCardHeader(item);
+  wrap.appendChild(header);
 
   // Square media container
   const media = document.createElement("div");

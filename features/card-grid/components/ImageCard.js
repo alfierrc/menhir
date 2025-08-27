@@ -1,4 +1,5 @@
 import { openModalForItem } from "../../modal/index.js";
+import { createCardHeader } from "./CardHeader.js";
 
 export function createImageCard(item) {
   // define wrapper
@@ -13,30 +14,8 @@ export function createImageCard(item) {
   wrap.style.cursor = "pointer"; // nice affordance
   wrap.dataset.item = JSON.stringify(item); // stash for click handler
 
-  // creat header
-  const header = document.createElement("div");
-  header.className = "item-header";
-
-  // create and append meta to header
-  const logMeta = document.createElement("div");
-  logMeta.className = "log-meta";
-  const title = document.createElement("div");
-  title.textContent = item.title || item.slug;
-  const date = document.createElement("div");
-  date.textContent = item.date;
-  logMeta.append(title, date);
-  header.appendChild(logMeta);
-
-  // create and append type icon to header
-  // const type = document.createElement("div");
-  // type.className = "type-icon";
-  // type.style.placeItems = "center";
-  // type.style.aspectRatio = "1 / 1";
-  // type.style.background = "#b78dacff";
-  // type.style.overflow = "hidden";
-  // type.style.borderRadius = "2px";
-  // header.appendChild(type);
-
+  // create header
+  const header = createCardHeader(item);
   wrap.appendChild(header);
 
   // create image card
