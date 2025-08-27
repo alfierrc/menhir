@@ -36,17 +36,17 @@ function ensureNodeForItem(item) {
 function updateNodeForItem(node, item) {
   // refresh header title/date if they're present on the card
   const meta = node.querySelector(".log-meta");
-  if (meta && meta.children && meta.children.length >= 2) {
-    const titleEl = meta.children[0];
-    const dateEl = meta.children[1];
-    if (titleEl) titleEl.textContent = item.title || item.slug || "";
-    if (dateEl) dateEl.textContent = item.date || "";
-  }
+  if (meta) {
+    const titleEl = meta.querySelector(".item-title");
+    const catalogueIdEl = meta.querySelector(".item-catalogue-id");
 
-  // refresh the dataset so click handlers can read the latest item if needed
-  try {
-    node.dataset.item = JSON.stringify(item);
-  } catch {}
+    if (titleEl) {
+      titleEl.textContent = item.title || item.slug || "";
+    }
+    if (catalogueIdEl) {
+      catalogueIdEl.textContent = item.catalogueId || "N/A";
+    }
+  }
 
   // If this is a NOTE card, recompute the excerpt text
   if ((item.type || "").toLowerCase() === "note") {

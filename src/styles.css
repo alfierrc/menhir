@@ -199,7 +199,7 @@ header {
 }
 
 .item-title {
-  font-weight: 600;
+  font-weight: 500;
   /* Add truncation for long titles */
   white-space: nowrap;
   overflow: hidden;
