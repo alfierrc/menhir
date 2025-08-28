@@ -892,3 +892,30 @@ body.modal-open {
 } */
 
 /* In app/styles.css */
+
+/* --- Webpage Card and Modal Enhancements --- */
+
+/* 1. Style the webpage card for a square preview */
+.webpage-card .card-media {
+  aspect-ratio: 4 / 3; /* Creates a perfect square */
+}
+
+.webpage-card .card-media img {
+  object-position: top; /* Ensures we see the top of the screenshot */
+}
+
+/* 2. Style the modal for a scrollable webpage screenshot */
+.modal-left.webpage-left {
+  padding: 0; /* Remove padding to allow the image to fill the space */
+  align-items: flex-start; /* Align the image to the top */
+  overflow-y: auto;
+}
+
+.modal-left.webpage-left img {
+  width: 100%; /* Make the image fit the container's width */
+  height: auto; /* Allow the height to grow as needed */
+  max-width: none; /* Override any max-width that might shrink it */
+  max-height: none; /* Override any max-height */
+  border-radius: 0; /* Remove border-radius for a seamless look */
+  object-fit: fill; /* Ensure the image scales to fill the width */
+}

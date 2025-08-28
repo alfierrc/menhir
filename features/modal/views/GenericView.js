@@ -46,10 +46,15 @@ export function createGenericView(config = {}) {
         },
       });
     } else if (config.leftPane === "image" && item.image) {
+      if (item.type === "webpage") {
+        slots.left.classList.add("webpage-left");
+      }
       const img = document.createElement("img");
-      img.style.maxWidth = "100%";
-      img.style.maxHeight = "100%";
-      img.style.objectFit = "contain";
+      if (item.type !== "webpage") {
+        img.style.maxWidth = "100%";
+        img.style.maxHeight = "100%";
+        img.style.objectFit = "contain";
+      }
       slots.left.appendChild(img);
       window.api.getImagePath(item.folder, item.image).then((src) => {
         img.src = src;

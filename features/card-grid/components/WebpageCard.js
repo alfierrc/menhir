@@ -20,7 +20,7 @@ export function createWebpageCard(item) {
 
   // create image card
   const card = document.createElement("article");
-  card.className = "card";
+  card.className = "card webpage-card";
   const media = document.createElement("div");
   media.className = "card-media";
   const img = document.createElement("img");
