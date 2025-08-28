@@ -17,6 +17,56 @@ const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
 const store = new Store();
 let win;
 let vaultPath;
+const http = require("http");
+let screenshotServer;
+const pendingScreenshots = new Map(); // Store screenshots temporarily
+
+// --- LOCAL SERVER for receiving screenshots from the extension ---
+function startScreenshotServer() {
+  screenshotServer = http.createServer((req, res) => {
+    // (The inner code remains the same)
+    if (req.method === "OPTIONS") {
+      res.writeHead(204, {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      });
+      res.end();
+      return;
+    }
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    if (req.method === "POST" && req.url === "/capture-screenshot") {
+      let body = "";
+      req.on("data", (chunk) => (body += chunk.toString()));
+      req.on("end", () => {
+        try {
+          const { screenshotId, data } = JSON.parse(body);
+          if (screenshotId && data) {
+            pendingScreenshots.set(screenshotId, data);
+            setTimeout(() => pendingScreenshots.delete(screenshotId), 30000);
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Screenshot received" }));
+          }
+        } catch (e) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Invalid request" }));
+        }
+      });
+    } else {
+      res.writeHead(404).end();
+    }
+  });
+
+  // --- Add error handling to the server itself ---
+  screenshotServer.on("error", (e) => {
+    if (e.code === "EADDRINUSE") {
+      console.log("Address in use, retrying...");
+      // We can simply ignore this error in dev mode, the old server will handle it.
+    }
+  });
+
+  screenshotServer.listen(28080, "127.0.0.1");
+}
 
 // --- SINGLE INSTANCE LOCK ---
 const gotTheLock = app.requestSingleInstanceLock();
@@ -55,6 +105,7 @@ async function handleCaptureUrl(captureUrl) {
 
     const itemType = params.get("type") || "webpage";
     const title = params.get("title") || "Untitled Capture";
+    const screenshotId = params.get("screenshotId");
 
     const timestamp = Date.now();
     const catalogueId = `${itemType.toUpperCase().substring(0, 4)}-${timestamp
@@ -74,8 +125,25 @@ async function handleCaptureUrl(captureUrl) {
     if (params.has("currency")) frontmatter.currency = params.get("currency");
     if (params.has("vendor")) frontmatter.vendor = params.get("vendor");
 
-    // 2. --- Image Downloading Logic ---
-    if (params.has("image")) {
+    // 2. --- Image Logic ---
+    // If a screenshotId is present, we handle that first.
+    if (screenshotId && pendingScreenshots.has(screenshotId)) {
+      const dataUrl = pendingScreenshots.get(screenshotId);
+      pendingScreenshots.delete(screenshotId); // Clean up immediately
+
+      const base64Data = dataUrl.replace(/^data:image\/jpeg;base64,/, "");
+      const imageBuffer = Buffer.from(base64Data, "base64");
+      const imageFilename = `${slug}.jpg`;
+      const saveDir = path.join(vaultPath, itemType);
+
+      await fsp.mkdir(saveDir, { recursive: true });
+      await fsp.writeFile(path.join(saveDir, imageFilename), imageBuffer);
+
+      frontmatter.image = imageFilename;
+      console.log(`Successfully saved screenshot as: ${imageFilename}`);
+    }
+    // Fallback to the existing image URL downloading logic
+    else if (params.has("image")) {
       const imageUrl = params.get("image");
       console.log(`Attempting to download image: ${imageUrl}`);
       try {
@@ -249,6 +317,7 @@ ipcMain.handle("delete-item", async (_evt, { type, slug }) => {
 
 // --- APP STARTUP ---
 app.whenReady().then(async () => {
+  startScreenshotServer();
   let savedPath = store.get("vaultPath");
   if (!savedPath || !fs.existsSync(savedPath)) {
     const { canceled, filePaths } = await dialog.showOpenDialog({
