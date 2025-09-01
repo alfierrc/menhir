@@ -87,7 +87,12 @@ if (!gotTheLock) {
 }
 
 // Add the thumbnail generation function
-async function generateThumbnail(imagePath, thumbnailPath, originalFilename) {
+async function generateThumbnail(
+  imagePath,
+  thumbnailPath,
+  originalFilename,
+  itemType
+) {
   try {
     const isGif = originalFilename.toLowerCase().endsWith(".gif");
     const image = sharp(imagePath, isGif ? { animated: true } : {});
@@ -95,7 +100,7 @@ async function generateThumbnail(imagePath, thumbnailPath, originalFilename) {
 
     let pipeline = image.resize(400, null, { withoutEnlargement: true });
 
-    if (metadata.height > metadata.width) {
+    if (itemType === "webpage") {
       pipeline = pipeline.resize(400, 400, {
         fit: "cover",
         position: "top",
@@ -179,7 +184,14 @@ async function handleCaptureUrl(captureUrl) {
       const imagePath = path.join(saveDir, imageFilename);
       const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
 
-      if (await generateThumbnail(imagePath, thumbnailPath, imageFilename)) {
+      if (
+        await generateThumbnail(
+          imagePath,
+          thumbnailPath,
+          imageFilename,
+          itemType
+        )
+      ) {
         frontmatter.image = imageFilename;
         frontmatter.thumbnail = thumbnailFilename;
       }
