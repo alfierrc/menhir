@@ -1,3 +1,24 @@
+/*
+copilot:
+TASK: Implement thumbnail generation for all captured images.
+
+1.  Import the 'sharp' library, which is used for high-performance image processing.
+2.  Create a new asynchronous function called `generateThumbnail`. This function will:
+    a. Accept two arguments: `imagePath` (the path to the full-size image) and `thumbnailPath` (the path where the thumbnail will be saved).
+    b. Use `sharp` to read the `imagePath`.
+    c. Resize the image to be 400 pixels wide, maintaining its aspect ratio.
+    d. For images that are taller than they are wide (like our webpage screenshots), crop the image to the top 400x400 square.
+    e. Convert the final thumbnail to JPEG format with a quality of 70.
+    f. Save the result to the `thumbnailPath`.
+    g. Include a try/catch block to log any errors during the process.
+3.  In the `handleCaptureUrl` function, locate the sections where an image is saved to disk (both for screenshots and downloaded images).
+4.  Immediately after the `fsp.writeFile` call that saves the main image, call the new `generateThumbnail` function.
+    a. The `imagePath` will be the full path to the image that was just saved.
+    b. The `thumbnailPath` should be the same path, but with a "-thumb.jpg" suffix (e.g., "my-image.jpg" becomes "my-image-thumb.jpg").
+5.  After generating the thumbnail, add a new `thumbnail` property to the `frontmatter` object. The value should be just the filename of the thumbnail (e.g., "my-image-thumb.jpg").
+*/
+
+const sharp = require("sharp");
 const {
   app,
   BrowserWindow,
@@ -85,6 +106,30 @@ if (!gotTheLock) {
   });
 }
 
+// Add the thumbnail generation function
+async function generateThumbnail(imagePath, thumbnailPath) {
+  try {
+    const image = sharp(imagePath);
+    const metadata = await image.metadata();
+
+    let pipeline = image.resize(400, null, { withoutEnlargement: true });
+
+    if (metadata.height > metadata.width) {
+      pipeline = pipeline.resize(400, 400, {
+        fit: "cover",
+        position: "top",
+      });
+    }
+
+    await pipeline.jpeg({ quality: 70 }).toFile(thumbnailPath);
+
+    return true;
+  } catch (error) {
+    console.error("Error generating thumbnail:", error);
+    return false;
+  }
+}
+
 // --- CAPTURE HANDLER ---
 async function handleCaptureUrl(captureUrl) {
   try {
@@ -139,7 +184,16 @@ async function handleCaptureUrl(captureUrl) {
       await fsp.mkdir(saveDir, { recursive: true });
       await fsp.writeFile(path.join(saveDir, imageFilename), imageBuffer);
 
-      frontmatter.image = imageFilename;
+      // Generate thumbnail
+      const thumbnailFilename = imageFilename.replace(/\.[^.]+$/, "-thumb.jpg");
+      const imagePath = path.join(saveDir, imageFilename);
+      const thumbnailPath = path.join(saveDir, thumbnailFilename);
+
+      if (await generateThumbnail(imagePath, thumbnailPath)) {
+        frontmatter.image = imageFilename;
+        frontmatter.thumbnail = thumbnailFilename;
+      }
+
       console.log(`Successfully saved screenshot as: ${imageFilename}`);
     }
     // Fallback to the existing image URL downloading logic
@@ -158,8 +212,19 @@ async function handleCaptureUrl(captureUrl) {
           await fsp.mkdir(saveDir, { recursive: true });
           await fsp.writeFile(path.join(saveDir, imageFilename), imageBuffer);
 
-          // Save the *local* filename to the frontmatter, not the original URL
-          frontmatter.image = imageFilename;
+          // Generate thumbnail
+          const thumbnailFilename = imageFilename.replace(
+            /\.[^.]+$/,
+            "-thumb.jpg"
+          );
+          const imagePath = path.join(saveDir, imageFilename);
+          const thumbnailPath = path.join(saveDir, thumbnailFilename);
+
+          if (await generateThumbnail(imagePath, thumbnailPath)) {
+            frontmatter.image = imageFilename;
+            frontmatter.thumbnail = thumbnailFilename;
+          }
+
           console.log(`Successfully saved image as: ${imageFilename}`);
         }
       } catch (imgErr) {
@@ -289,7 +354,6 @@ ipcMain.handle("delete-item", async (_evt, { type, slug }) => {
   try {
     const mdFilePath = path.join(vaultPath, type, `${slug}.md`);
 
-    // Before deleting the markdown file, read it one last time to see if it has an image
     if (fs.existsSync(mdFilePath)) {
       const raw = fs.readFileSync(mdFilePath, "utf8");
       const fm = matter(raw);
@@ -297,13 +361,18 @@ ipcMain.handle("delete-item", async (_evt, { type, slug }) => {
       if (fm.data.image) {
         const imageFilePath = path.join(vaultPath, type, fm.data.image);
         if (fs.existsSync(imageFilePath)) {
-          await fsp.unlink(imageFilePath); // Delete the image file
-          console.log(`Deleted image: ${imageFilePath}`);
+          await fsp.unlink(imageFilePath);
+        }
+        // Also delete thumbnail if it exists
+        if (fm.data.thumbnail) {
+          const thumbnailPath = path.join(vaultPath, type, fm.data.thumbnail);
+          if (fs.existsSync(thumbnailPath)) {
+            await fsp.unlink(thumbnailPath);
+          }
         }
       }
 
-      await fsp.unlink(mdFilePath); // Delete the markdown file
-      console.log(`Deleted item: ${mdFilePath}`);
+      await fsp.unlink(mdFilePath);
     }
 
     // Tell the renderer to remove this item from the grid

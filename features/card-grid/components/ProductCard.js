@@ -43,13 +43,15 @@ export function createProductCard(item) {
     const markLoaded = () => img.classList.add("is-loaded");
     img.onload = markLoaded;
     img.onerror = markLoaded;
-    window.api.getImagePath(item.folder, item.image).then((src) => {
-      img.src = src;
-      if (img.complete)
-        "decode" in img
-          ? img.decode().then(markLoaded).catch(markLoaded)
-          : markLoaded();
-    });
+    window.api
+      .getImagePath(item.folder, item.thumbnail || item.image)
+      .then((src) => {
+        img.src = src;
+        if (img.complete)
+          "decode" in img
+            ? img.decode().then(markLoaded).catch(markLoaded)
+            : markLoaded();
+      });
   }
 
   // listen for click
