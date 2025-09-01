@@ -87,9 +87,10 @@ if (!gotTheLock) {
 }
 
 // Add the thumbnail generation function
-async function generateThumbnail(imagePath, thumbnailPath) {
+async function generateThumbnail(imagePath, thumbnailPath, originalFilename) {
   try {
-    const image = sharp(imagePath);
+    const isGif = originalFilename.toLowerCase().endsWith(".gif");
+    const image = sharp(imagePath, isGif ? { animated: true } : {});
     const metadata = await image.metadata();
 
     let pipeline = image.resize(400, null, { withoutEnlargement: true });
@@ -101,7 +102,11 @@ async function generateThumbnail(imagePath, thumbnailPath) {
       });
     }
 
-    await pipeline.jpeg({ quality: 70 }).toFile(thumbnailPath);
+    if (isGif) {
+      await pipeline.gif().toFile(thumbnailPath);
+    } else {
+      await pipeline.jpeg({ quality: 70 }).toFile(thumbnailPath);
+    }
 
     return true;
   } catch (error) {
@@ -174,9 +179,9 @@ async function handleCaptureUrl(captureUrl) {
       const imagePath = path.join(saveDir, imageFilename);
       const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
 
-      if (await generateThumbnail(imagePath, thumbnailPath)) {
+      if (await generateThumbnail(imagePath, thumbnailPath, imageFilename)) {
         frontmatter.image = imageFilename;
-        frontmatter.thumbnail = thumbnailFilename; // Just the filename
+        frontmatter.thumbnail = thumbnailFilename;
       }
 
       console.log(`Successfully saved screenshot as: ${imageFilename}`);
@@ -198,16 +203,19 @@ async function handleCaptureUrl(captureUrl) {
           await fsp.writeFile(path.join(saveDir, imageFilename), imageBuffer);
 
           // Generate thumbnail
+          const isGif = imageFilename.toLowerCase().endsWith(".gif");
           const thumbnailFilename = imageFilename.replace(
             /\.[^.]+$/,
-            "-thumb.jpg"
+            isGif ? "-thumb.gif" : "-thumb.jpg"
           );
           const imagePath = path.join(saveDir, imageFilename);
           const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
 
-          if (await generateThumbnail(imagePath, thumbnailPath)) {
+          if (
+            await generateThumbnail(imagePath, thumbnailPath, imageFilename)
+          ) {
             frontmatter.image = imageFilename;
-            frontmatter.thumbnail = thumbnailFilename; // Just the filename
+            frontmatter.thumbnail = thumbnailFilename;
           }
 
           console.log(`Successfully saved image as: ${imageFilename}`);
@@ -278,7 +286,7 @@ ipcMain.handle("load-vault", async () => {
 });
 
 ipcMain.handle("get-image-path", (_e, { folder, filename }) => {
-  if (filename.includes("-thumb.jpg")) {
+  if (filename.includes("-thumb")) {
     const newThumbnailPath = path.join(
       vaultPath,
       ".menhir",
