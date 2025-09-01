@@ -1,23 +1,3 @@
-/*
-copilot:
-TASK: Implement thumbnail generation for all captured images.
-
-1.  Import the 'sharp' library, which is used for high-performance image processing.
-2.  Create a new asynchronous function called `generateThumbnail`. This function will:
-    a. Accept two arguments: `imagePath` (the path to the full-size image) and `thumbnailPath` (the path where the thumbnail will be saved).
-    b. Use `sharp` to read the `imagePath`.
-    c. Resize the image to be 400 pixels wide, maintaining its aspect ratio.
-    d. For images that are taller than they are wide (like our webpage screenshots), crop the image to the top 400x400 square.
-    e. Convert the final thumbnail to JPEG format with a quality of 70.
-    f. Save the result to the `thumbnailPath`.
-    g. Include a try/catch block to log any errors during the process.
-3.  In the `handleCaptureUrl` function, locate the sections where an image is saved to disk (both for screenshots and downloaded images).
-4.  Immediately after the `fsp.writeFile` call that saves the main image, call the new `generateThumbnail` function.
-    a. The `imagePath` will be the full path to the image that was just saved.
-    b. The `thumbnailPath` should be the same path, but with a "-thumb.jpg" suffix (e.g., "my-image.jpg" becomes "my-image-thumb.jpg").
-5.  After generating the thumbnail, add a new `thumbnail` property to the `frontmatter` object. The value should be just the filename of the thumbnail (e.g., "my-image-thumb.jpg").
-*/
-
 const sharp = require("sharp");
 const {
   app,
@@ -172,6 +152,11 @@ async function handleCaptureUrl(captureUrl) {
 
     // 2. --- Image Logic ---
     // If a screenshotId is present, we handle that first.
+    // Define and create thumbnail directory
+    const thumbnailDir = path.join(vaultPath, ".menhir", "thumbnails");
+    await fsp.mkdir(thumbnailDir, { recursive: true });
+
+    // Screenshot handling
     if (screenshotId && pendingScreenshots.has(screenshotId)) {
       const dataUrl = pendingScreenshots.get(screenshotId);
       pendingScreenshots.delete(screenshotId); // Clean up immediately
@@ -187,16 +172,16 @@ async function handleCaptureUrl(captureUrl) {
       // Generate thumbnail
       const thumbnailFilename = imageFilename.replace(/\.[^.]+$/, "-thumb.jpg");
       const imagePath = path.join(saveDir, imageFilename);
-      const thumbnailPath = path.join(saveDir, thumbnailFilename);
+      const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
 
       if (await generateThumbnail(imagePath, thumbnailPath)) {
         frontmatter.image = imageFilename;
-        frontmatter.thumbnail = thumbnailFilename;
+        frontmatter.thumbnail = thumbnailFilename; // Just the filename
       }
 
       console.log(`Successfully saved screenshot as: ${imageFilename}`);
     }
-    // Fallback to the existing image URL downloading logic
+    // Image URL handling
     else if (params.has("image")) {
       const imageUrl = params.get("image");
       console.log(`Attempting to download image: ${imageUrl}`);
@@ -218,11 +203,11 @@ async function handleCaptureUrl(captureUrl) {
             "-thumb.jpg"
           );
           const imagePath = path.join(saveDir, imageFilename);
-          const thumbnailPath = path.join(saveDir, thumbnailFilename);
+          const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
 
           if (await generateThumbnail(imagePath, thumbnailPath)) {
             frontmatter.image = imageFilename;
-            frontmatter.thumbnail = thumbnailFilename;
+            frontmatter.thumbnail = thumbnailFilename; // Just the filename
           }
 
           console.log(`Successfully saved image as: ${imageFilename}`);
@@ -293,6 +278,17 @@ ipcMain.handle("load-vault", async () => {
 });
 
 ipcMain.handle("get-image-path", (_e, { folder, filename }) => {
+  if (filename.includes("-thumb.jpg")) {
+    const newThumbnailPath = path.join(
+      vaultPath,
+      ".menhir",
+      "thumbnails",
+      filename
+    );
+    if (fs.existsSync(newThumbnailPath)) {
+      return `local-resource://.menhir/thumbnails/${filename}`;
+    }
+  }
   return `local-resource://${folder}/${filename}`;
 });
 
@@ -363,11 +359,25 @@ ipcMain.handle("delete-item", async (_evt, { type, slug }) => {
         if (fs.existsSync(imageFilePath)) {
           await fsp.unlink(imageFilePath);
         }
-        // Also delete thumbnail if it exists
+        // Check and delete thumbnail from both possible locations
         if (fm.data.thumbnail) {
-          const thumbnailPath = path.join(vaultPath, type, fm.data.thumbnail);
-          if (fs.existsSync(thumbnailPath)) {
-            await fsp.unlink(thumbnailPath);
+          const oldThumbnailPath = path.join(
+            vaultPath,
+            type,
+            fm.data.thumbnail
+          );
+          const newThumbnailPath = path.join(
+            vaultPath,
+            ".menhir",
+            "thumbnails",
+            fm.data.thumbnail
+          );
+
+          if (fs.existsSync(oldThumbnailPath)) {
+            await fsp.unlink(oldThumbnailPath);
+          }
+          if (fs.existsSync(newThumbnailPath)) {
+            await fsp.unlink(newThumbnailPath);
           }
         }
       }
