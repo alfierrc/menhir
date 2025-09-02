@@ -46,9 +46,36 @@ export function createGenericView(config = {}) {
         },
       });
     } else if (config.leftPane === "reader") {
-      slots.left.classList.add("note-left", "article-reader-view"); // Reuse note styles and add our own
+      slots.left.classList.add("note-left", "article-reader-view"); // Keep these classes
+
+      // Create a dedicated header for the reader view
+      const readerHeader = document.createElement("header");
+      readerHeader.className = "reader-header";
+
+      const readerTitle = document.createElement("h1");
+      readerTitle.className = "reader-title";
+      readerTitle.textContent = item.title;
+      readerHeader.appendChild(readerTitle);
+
+      // Add author (byline) and site name if they exist
+      if (item.byline || item.siteName) {
+        const readerMeta = document.createElement("div");
+        readerMeta.className = "reader-meta";
+        const bylineText = item.byline ? `By ${item.byline}` : "";
+        const siteNameText = item.siteName
+          ? `${item.byline ? " • " : ""}${item.siteName}`
+          : "";
+        readerMeta.textContent = bylineText + siteNameText;
+        readerHeader.appendChild(readerMeta);
+      }
+
+      // Create a container for the actual article content
       const articleContent = document.createElement("div");
-      articleContent.innerHTML = item.content; // Render the clean HTML
+      articleContent.className = "article-body";
+      articleContent.innerHTML = item.content;
+
+      // Append the new header and the content to the left pane
+      slots.left.appendChild(readerHeader);
       slots.left.appendChild(articleContent);
     } else if (config.leftPane === "image" && item.image) {
       if (item.type === "webpage") {

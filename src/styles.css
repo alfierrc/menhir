@@ -1026,7 +1026,6 @@ body.grid-size-small .grid.catalog {
 }
 
 /* Headings */
-.article-reader-view h1,
 .article-reader-view h2,
 .article-reader-view h3 {
   font-family: system-ui, -apple-system, Segoe UI, Inter, Roboto, sans-serif;
@@ -1111,4 +1110,52 @@ body.grid-size-small .grid.catalog {
 
 .article-reader-view li {
   margin-bottom: 0.5em;
+}
+
+/* Constrain the content and header width */
+.article-reader-view > * {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 40px; /* Add padding to the inner elements */
+  box-sizing: content-box; /* Ensure padding doesn't affect max-width */
+}
+
+/* Reader Header Styling */
+.reader-header {
+  display: block;
+  padding-top: 50px;
+  padding-bottom: 25px;
+  margin-bottom: 25px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.reader-title {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 2.4em;
+  line-height: 1.2;
+  font-weight: 700;
+  margin: 0 0 0.5em;
+  color: var(--ink);
+}
+
+.reader-meta {
+  font-family: system-ui, -apple-system, Segoe UI, Inter, Roboto, sans-serif;
+  font-size: 0.8em;
+  color: var(--ink-dim);
+  font-weight: 300;
+}
+
+/* Adjust the article body for the new header */
+.article-body p:first-child {
+  margin-top: 0;
+}
+
+/* Improve Drop Caps for a classic article feel */
+.article-body p:first-child::first-letter {
+  font-size: 4em;
+  float: left;
+  line-height: 0.8;
+  margin-right: 0.05em;
+  font-weight: bold;
+  font-family: Georgia, "Times New Roman", Times, serif;
 }
