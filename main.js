@@ -143,160 +143,132 @@ async function generateThumbnail(
 // --- CAPTURE HANDLER ---
 async function handleCaptureUrl(captureUrl) {
   try {
-    // Helper function to create a filename-safe "slug" from a title
     function slugify(text) {
       return text
         .toString()
         .toLowerCase()
         .trim()
-        .replace(/\s+/g, "-") // Replace spaces with -
-        .replace(/[^\w\-]+/g, "") // Remove all non-word chars except -
-        .replace(/\-\-+/g, "-") // Replace multiple - with single -
-        .substring(0, 50); // Truncate to a reasonable length
+        .replace(/\s+/g, "-")
+        .replace(/[^\w\-]+/g, "")
+        .replace(/\-\-+/g, "-")
+        .substring(0, 50);
     }
 
     const url = new URL(captureUrl);
     const params = url.searchParams;
-
     const itemType = params.get("type") || "webpage";
     const title = params.get("title") || "Untitled Capture";
-    const screenshotId = params.get("screenshotId");
-    const articleId = params.get("articleId");
-
     const timestamp = Date.now();
-    const catalogueId = `${itemType.toUpperCase().substring(0, 4)}-${timestamp
-      .toString()
-      .slice(-6)}`;
-
-    // 1. Create the new, human-readable slug
-    const slug = `${slugify(title)}-${Date.now()}`;
+    const slug = `${slugify(title)}-${timestamp}`;
 
     let frontmatter = {
-      catalogueId: catalogueId,
+      catalogueId: `${itemType.toUpperCase().substring(0, 4)}-${timestamp
+        .toString()
+        .slice(-6)}`,
       title: title,
-      added: new Date().toISOString(), // 3. Add the timestamp here
+      added: new Date().toISOString(),
+      source: params.get("source"),
     };
-    if (params.has("source")) frontmatter.source = params.get("source");
-    if (params.has("price")) frontmatter.price = params.get("price");
-    if (params.has("currency")) frontmatter.currency = params.get("currency");
-    if (params.has("vendor")) frontmatter.vendor = params.get("vendor");
 
-    // 2. --- Image Logic ---
-    // If a screenshotId is present, we handle that first.
-    // Define and create thumbnail directory
-    const thumbnailDir = path.join(vaultPath, ".menhir", "thumbnails");
-    await fsp.mkdir(thumbnailDir, { recursive: true });
+    let content = "";
 
-    // Screenshot handling
-    if (screenshotId && pendingScreenshots.has(screenshotId)) {
-      const dataUrl = pendingScreenshots.get(screenshotId);
-      pendingScreenshots.delete(screenshotId); // Clean up immediately
+    // --- Article Processing ---
+    if (params.has("articleId")) {
+      const html = pendingArticles.get(params.get("articleId"));
+      if (html) {
+        pendingArticles.delete(params.get("articleId"));
+        const dom = new JSDOM(html, { url: frontmatter.source });
+        const reader = new Readability(dom.window.document);
+        const article = reader.parse();
 
-      const base64Data = dataUrl.replace(/^data:image\/jpeg;base64,/, "");
-      const imageBuffer = Buffer.from(base64Data, "base64");
-      const imageFilename = `${slug}.jpg`;
-      const saveDir = path.join(vaultPath, itemType);
-
-      await fsp.mkdir(saveDir, { recursive: true });
-      await fsp.writeFile(path.join(saveDir, imageFilename), imageBuffer);
-
-      // Generate thumbnail
-      const thumbnailFilename = imageFilename.replace(/\.[^.]+$/, "-thumb.jpg");
-      const imagePath = path.join(saveDir, imageFilename);
-      const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
-
-      if (
-        await generateThumbnail(
-          imagePath,
-          thumbnailPath,
-          imageFilename,
-          itemType
-        )
-      ) {
-        frontmatter.image = imageFilename;
-        frontmatter.thumbnail = thumbnailFilename;
-      }
-
-      console.log(`Successfully saved screenshot as: ${imageFilename}`);
-    }
-    // Image URL handling
-    else if (params.has("image")) {
-      const imageUrl = params.get("image");
-      console.log(`Attempting to download image: ${imageUrl}`);
-      try {
-        const response = await fetch(imageUrl); // Use Node's built-in fetch
-        if (response.ok) {
-          const imageBuffer = Buffer.from(await response.arrayBuffer());
-          // Create a unique filename for the image based on the item's slug
-          const extension = path.extname(new URL(imageUrl).pathname) || ".jpg";
-          const imageFilename = `${slug}${extension}`;
-          const saveDir = path.join(vaultPath, itemType);
-
-          await fsp.mkdir(saveDir, { recursive: true });
-          await fsp.writeFile(path.join(saveDir, imageFilename), imageBuffer);
-
-          // Generate thumbnail
-          const isGif = imageFilename.toLowerCase().endsWith(".gif");
-          const thumbnailFilename = imageFilename.replace(
-            /\.[^.]+$/,
-            isGif ? "-thumb.gif" : "-thumb.jpg"
+        if (article) {
+          frontmatter.title = article.title;
+          frontmatter.byline = article.byline;
+          frontmatter.siteName = article.siteName;
+          content = article.content;
+          // **SOLUTION**: Get the lead image from the parsed article
+          // or fall back to the Open Graph image from the original document.
+          const ogImage = dom.window.document.querySelector(
+            'meta[property="og:image"]'
           );
-          const imagePath = path.join(saveDir, imageFilename);
-          const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
-
-          if (
-            await generateThumbnail(
-              imagePath,
-              thumbnailPath,
-              imageFilename,
-              itemType
-            )
-          ) {
-            frontmatter.image = imageFilename;
-            frontmatter.thumbnail = thumbnailFilename;
-          }
-
-          console.log(`Successfully saved image as: ${imageFilename}`);
+          frontmatter.image = article.lead_image_url || ogImage?.content;
         }
-      } catch (imgErr) {
-        console.error("Failed to download image:", imgErr);
-        // If download fails, save the original URL as a fallback
-        frontmatter.image = imageUrl;
+      }
+    } else {
+      // --- Standard Item Processing ---
+      if (params.has("price")) frontmatter.price = params.get("price");
+      if (params.has("currency")) frontmatter.currency = params.get("currency");
+      if (params.has("vendor")) frontmatter.vendor = params.get("vendor");
+      if (params.has("image")) frontmatter.image = params.get("image");
+    }
+
+    // --- Centralized Image Downloading & Thumbnail Generation ---
+    if (frontmatter.image || params.has("screenshotId")) {
+      const thumbnailDir = path.join(vaultPath, ".menhir", "thumbnails");
+      await fsp.mkdir(thumbnailDir, { recursive: true });
+      const saveDir = path.join(vaultPath, itemType);
+      await fsp.mkdir(saveDir, { recursive: true });
+
+      let imageFilename;
+      try {
+        imageFilename = `${slug}${
+          path.extname(new URL(frontmatter.image).pathname) || ".jpg"
+        }`;
+      } catch {
+        imageFilename = `${slug}.jpg`;
+      }
+      const imagePath = path.join(saveDir, imageFilename);
+
+      if (params.has("screenshotId")) {
+        const dataUrl = pendingScreenshots.get(params.get("screenshotId"));
+        pendingScreenshots.delete(params.get("screenshotId"));
+        const imageBuffer = Buffer.from(
+          dataUrl.replace(/^data:image\/jpeg;base64,/, ""),
+          "base64"
+        );
+        await fsp.writeFile(imagePath, imageBuffer);
+      } else if (frontmatter.image) {
+        try {
+          const response = await fetch(frontmatter.image);
+          if (response.ok) {
+            const imageBuffer = Buffer.from(await response.arrayBuffer());
+            await fsp.writeFile(imagePath, imageBuffer);
+          } else {
+            frontmatter.image = null; // Clear image if download fails
+          }
+        } catch (imgErr) {
+          console.error("Failed to download image:", imgErr);
+          frontmatter.image = null; // Clear image on error
+        }
+      }
+
+      // Generate Thumbnail (only if image was successfully saved)
+      if (frontmatter.image) {
+        const isGif = imageFilename.toLowerCase().endsWith(".gif");
+        const thumbnailFilename = imageFilename.replace(
+          /\.[^.]+$/,
+          isGif ? "-thumb.gif" : "-thumb.jpg"
+        );
+        const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
+        if (
+          await generateThumbnail(
+            imagePath,
+            thumbnailPath,
+            imageFilename,
+            itemType
+          )
+        ) {
+          frontmatter.image = imageFilename; // Save the local filename
+          frontmatter.thumbnail = thumbnailFilename;
+        }
       }
     }
 
-    // Article handling
-    if (articleId && pendingArticles.has(articleId)) {
-      const html = pendingArticles.get(articleId);
-      pendingArticles.delete(articleId);
-
-      const dom = new JSDOM(html, { url: frontmatter.source });
-      const reader = new Readability(dom.window.document);
-      const article = reader.parse();
-
-      if (article) {
-        frontmatter.title = article.title || title;
-        if (article.byline) frontmatter.byline = article.byline;
-        if (article.siteName) frontmatter.siteName = article.siteName;
-        const content = article.content;
-
-        const fileContents = matter.stringify(content, frontmatter);
-        const saveDir = path.join(vaultPath, "article");
-        await fsp.mkdir(saveDir, { recursive: true });
-        const filePath = path.join(saveDir, `${slug}.md`);
-        await fsp.writeFile(filePath, fileContents, "utf8");
-
-        win?.webContents.send("vault:refresh-needed");
-        return;
-      }
-    }
-
-    const fileContents = matter.stringify("", frontmatter);
+    // --- Final Save ---
+    const fileContents = matter.stringify(content, frontmatter);
     const saveDir = path.join(vaultPath, itemType);
-
     await fsp.mkdir(saveDir, { recursive: true });
-    const filePath = path.join(saveDir, `${slug}.md`);
-    await fsp.writeFile(filePath, fileContents, "utf8");
+    await fsp.writeFile(path.join(saveDir, `${slug}.md`), fileContents, "utf8");
 
     new Notification({
       title: "Menhir",

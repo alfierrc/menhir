@@ -1160,16 +1160,53 @@ body.grid-size-small .grid.catalog {
   font-family: Georgia, "Times New Roman", Times, serif;
 }
 
-/* --- Article Card Enhancements --- */
+/* --- Article Card Layout --- */
 
-/* Base styling for all article cards */
-.article-card .card-media {
-  aspect-ratio: 4 / 3;
-  background: var(--panel);
+/* Base styles for ALL article cards to restore the white background */
+.grid.catalog .article-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--panel);
+  border: 1px solid var(--rule);
+  overflow: hidden; /* Prevent content from spilling out */
 }
 
-/* Styling for the "no-image" fallback state */
-.article-card .card-media.no-image {
+/* 1. For cards WITH an image: Make them square */
+.grid.catalog .article-card.has-image {
+  aspect-ratio: 1 / 1;
+}
+
+.article-card.has-image .card-media-top {
+  flex: 1; /* Image takes 1/3 of the height */
+  overflow: hidden;
+}
+
+.article-card.has-image .card-media-top img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.article-card.has-image .card-content-bottom {
+  flex: 1; /* Text takes 2/3 of the height */
+  border-top: 1px solid var(--rule);
+}
+
+/* 2. For cards WITHOUT an image: Make them landscape */
+.grid.catalog .article-card:not(.has-image) {
+  aspect-ratio: 4 / 3;
+}
+
+.article-card:not(.has-image) .card-media-top {
+  display: none; /* Hide the empty top section */
+}
+
+.article-card:not(.has-image) .card-content-bottom {
+  flex: 1; /* Allow content to fill the entire card */
+}
+
+/* 3. Shared styles for the bottom content area */
+.article-card .card-content-bottom {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1180,13 +1217,13 @@ body.grid-size-small .grid.catalog {
 
 .article-card-icon {
   color: var(--ink-dim);
-  opacity: 0.5;
-  margin-bottom: 12px;
+  opacity: 0.6;
+  margin-bottom: 8px;
 }
 
 .article-card-icon svg {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
 }
 
 .article-card-title {
@@ -1194,10 +1231,8 @@ body.grid-size-small .grid.catalog {
   font-size: 1.1em;
   line-height: 1.3;
   color: var(--ink);
-  font-weight: normal;
-  /* Truncate long titles to 3 lines */
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 3; /* Allow more lines to fill the space */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
