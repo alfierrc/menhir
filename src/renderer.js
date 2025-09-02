@@ -42,8 +42,62 @@ window.addEventListener("DOMContentLoaded", async () => {
   const themeToggle = document.getElementById("themeToggle");
   const settingsBtn = document.getElementById("settingsBtn");
   const settingsPanel = document.getElementById("settings-panel");
+  const gridSizeBtn = document.getElementById("gridSizeBtn");
+  const gridSizePanel = document.getElementById("grid-size-panel");
   const vaultPathDisplay = document.getElementById("vaultPathDisplay");
   const changeVaultBtn = document.getElementById("changeVaultBtn");
+
+  // Grid size control logic
+  function applyGridSize(size) {
+    // Remove existing size classes
+    document.body.classList.remove(
+      "grid-size-large",
+      "grid-size-medium",
+      "grid-size-small"
+    );
+    // Add new size class
+    document.body.classList.add(`grid-size-${size}`);
+    // Update active state in panel
+    gridSizePanel.querySelectorAll("button").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.size === size);
+    });
+    // Save preference
+    localStorage.setItem("menhir.gridSize", size);
+  }
+
+  // Initialize grid size from saved preference
+  const savedGridSize = localStorage.getItem("menhir.gridSize") || "medium";
+  applyGridSize(savedGridSize);
+
+  // Grid size panel toggle
+  gridSizeBtn.addEventListener("click", () => {
+    gridSizePanel.classList.toggle("is-open");
+  });
+
+  // Grid size selection
+  gridSizePanel.addEventListener("click", (e) => {
+    const button = e.target.closest("button");
+    if (button?.dataset.size) {
+      applyGridSize(button.dataset.size);
+      gridSizePanel.classList.remove("is-open");
+    }
+  });
+
+  // Close panels when clicking outside
+  window.addEventListener("click", (event) => {
+    if (
+      !gridSizeBtn.contains(event.target) &&
+      !gridSizePanel.contains(event.target)
+    ) {
+      gridSizePanel.classList.remove("is-open");
+    }
+    if (
+      !settingsBtn.contains(event.target) &&
+      !settingsPanel.contains(event.target)
+    ) {
+      settingsPanel.classList.remove("is-open");
+    }
+  });
 
   // --- Theme Logic ---
   function applyTheme(theme) {

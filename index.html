@@ -22,6 +22,45 @@
     <header>
       <span>Menhir v0</span>
       <div class="header-actions">
+        <button id="gridSizeBtn" aria-label="Grid size">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="3" width="7" width="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+        </button>
+        <div id="grid-size-panel" class="grid-size-panel">
+          <button data-size="large">
+            <div class="grid-preview">
+              <span></span><span></span> <span></span><span></span>
+            </div>
+          </button>
+          <button data-size="medium">
+            <div class="grid-preview">
+              <span></span><span></span><span></span> <span></span><span></span
+              ><span></span> <span></span><span></span><span></span>
+            </div>
+          </button>
+          <button data-size="small">
+            <div class="grid-preview">
+              <span></span><span></span><span></span><span></span> <span></span
+              ><span></span><span></span><span></span> <span></span><span></span
+              ><span></span><span></span> <span></span><span></span><span></span
+              ><span></span>
+            </div>
+          </button>
+        </div>
         <button id="settingsBtn" aria-label="Settings">
           <svg
             xmlns="http://www.w3.org/2000/svg"
