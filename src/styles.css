@@ -1159,3 +1159,45 @@ body.grid-size-small .grid.catalog {
   font-weight: bold;
   font-family: Georgia, "Times New Roman", Times, serif;
 }
+
+/* --- Article Card Enhancements --- */
+
+/* Base styling for all article cards */
+.article-card .card-media {
+  aspect-ratio: 4 / 3;
+  background: var(--panel);
+}
+
+/* Styling for the "no-image" fallback state */
+.article-card .card-media.no-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+}
+
+.article-card-icon {
+  color: var(--ink-dim);
+  opacity: 0.5;
+  margin-bottom: 12px;
+}
+
+.article-card-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+.article-card-title {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 1.1em;
+  line-height: 1.3;
+  color: var(--ink);
+  font-weight: normal;
+  /* Truncate long titles to 3 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
