@@ -46,7 +46,21 @@ export function createGenericView(config = {}) {
         },
       });
     } else if (config.leftPane === "reader") {
-      slots.left.classList.add("note-left", "article-reader-view"); // Keep these classes
+      slots.left.innerHTML = ""; // Clear the pane first
+      slots.left.classList.add("note-left", "article-reader-view");
+
+      // --- ADD THIS BLOCK ---
+      // Add cover image if it exists
+      if (item.image) {
+        const imageContainer = document.createElement("div");
+        imageContainer.className = "reader-image-container";
+        const img = document.createElement("img");
+        window.api.getImagePath(item.folder, item.image).then((src) => {
+          img.src = src;
+        });
+        imageContainer.appendChild(img);
+        slots.left.appendChild(imageContainer);
+      }
 
       // Create a dedicated header for the reader view
       const readerHeader = document.createElement("header");
