@@ -224,7 +224,12 @@ async function handleCaptureUrl(captureUrl) {
           const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
 
           if (
-            await generateThumbnail(imagePath, thumbnailPath, imageFilename)
+            await generateThumbnail(
+              imagePath,
+              thumbnailPath,
+              imageFilename,
+              itemType
+            )
           ) {
             frontmatter.image = imageFilename;
             frontmatter.thumbnail = thumbnailFilename;

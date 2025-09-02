@@ -28,11 +28,42 @@ export function createProductCard(item) {
   media.appendChild(img);
 
   // Create and add the price box if a price exists
+  // Get currency symbol
+  function getCurrencySymbol(currencyInput, locale = "en-US") {
+    // Use a regular expression to check if the input is a three-letter code.
+    // /^[A-Z]{3}$/ checks for exactly 3 uppercase alphabetic characters from the start (^) to the end ($) of the string.
+    const isCurrencyCode = /^[A-Z]{3}$/.test(currencyInput);
+
+    if (isCurrencyCode) {
+      try {
+        const formatter = new Intl.NumberFormat(locale, {
+          style: "currency",
+          currency: currencyInput,
+          currencyDisplay: "symbol",
+        });
+
+        const parts = formatter.formatToParts(0);
+        const currencyPart = parts.find((part) => part.type === "currency");
+
+        // Return the symbol or the original code as a fallback if the symbol is not found
+        return currencyPart ? currencyPart.value : currencyInput;
+      } catch (e) {
+        // Return the original code if Intl.NumberFormat throws an error (e.g., for an invalid code)
+        console.error("Invalid currency code:", e);
+        return currencyInput;
+      }
+    } else {
+      // Return the input as-is if it's not a three-letter code
+      return currencyInput;
+    }
+  }
+
+  // only add price box if price exists
   if (item.price) {
     const priceBox = document.createElement("div");
+    const currencySymbol = getCurrencySymbol(item.currency || "USD");
     priceBox.className = "price-box";
-    // Change this line
-    priceBox.textContent = `${item.currency || "$"}${item.price}`;
+    priceBox.textContent = `${currencySymbol}${item.price}`;
     media.appendChild(priceBox);
   }
 
