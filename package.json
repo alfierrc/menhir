@@ -19,12 +19,14 @@
   "homepage": "https://github.com/alfierrc/menhir#readme",
   "description": "",
   "dependencies": {
+    "@mozilla/readability": "^0.6.0",
     "@toast-ui/editor": "^3.1.0",
     "date-fns": "^4.1.0",
     "dompurify": "^3.2.6",
     "electron": "^37.2.6",
     "electron-store": "^10.1.0",
     "gray-matter": "^4.0.3",
+    "jsdom": "^26.1.0",
     "sharp": "^0.34.3"
   },
   "devDependencies": {

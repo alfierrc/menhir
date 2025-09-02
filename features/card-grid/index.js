@@ -2,6 +2,7 @@ import { createImageCard } from "./components/ImageCard.js";
 import { createProductCard } from "./components/ProductCard.js";
 import { createNoteCard } from "./components/NoteCard.js";
 import { createWebpageCard } from "./components/WebpageCard.js";
+import { createArticleCard } from "./components/ArticleCard.js";
 import DOMPurify from "dompurify";
 
 const buildByType = {
@@ -9,6 +10,7 @@ const buildByType = {
   product: createProductCard,
   note: createNoteCard,
   webpage: createWebpageCard,
+  article: createArticleCard,
 };
 
 function getKey(item) {

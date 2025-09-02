@@ -45,6 +45,11 @@ export function createGenericView(config = {}) {
           },
         },
       });
+    } else if (config.leftPane === "reader") {
+      slots.left.classList.add("note-left", "article-reader-view"); // Reuse note styles and add our own
+      const articleContent = document.createElement("div");
+      articleContent.innerHTML = item.content; // Render the clean HTML
+      slots.left.appendChild(articleContent);
     } else if (config.leftPane === "image" && item.image) {
       if (item.type === "webpage") {
         slots.left.classList.add("webpage-left");

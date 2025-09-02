@@ -1,4 +1,6 @@
 const sharp = require("sharp");
+const { Readability } = require("@mozilla/readability");
+const { JSDOM } = require("jsdom");
 const {
   app,
   BrowserWindow,
@@ -21,6 +23,7 @@ let vaultPath;
 const http = require("http");
 let screenshotServer;
 const pendingScreenshots = new Map(); // Store screenshots temporarily
+const pendingArticles = new Map(); // Store article HTML temporarily
 
 // --- LOCAL SERVER for receiving screenshots from the extension ---
 function startScreenshotServer() {
@@ -47,6 +50,23 @@ function startScreenshotServer() {
             setTimeout(() => pendingScreenshots.delete(screenshotId), 30000);
             res.writeHead(200, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ message: "Screenshot received" }));
+          }
+        } catch (e) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Invalid request" }));
+        }
+      });
+    } else if (req.method === "POST" && req.url === "/capture-article") {
+      let body = "";
+      req.on("data", (chunk) => (body += chunk.toString()));
+      req.on("end", () => {
+        try {
+          const { articleId, html } = JSON.parse(body);
+          if (articleId && html) {
+            pendingArticles.set(articleId, html);
+            setTimeout(() => pendingArticles.delete(articleId), 30000);
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Article received" }));
           }
         } catch (e) {
           res.writeHead(400, { "Content-Type": "application/json" });
@@ -141,6 +161,7 @@ async function handleCaptureUrl(captureUrl) {
     const itemType = params.get("type") || "webpage";
     const title = params.get("title") || "Untitled Capture";
     const screenshotId = params.get("screenshotId");
+    const articleId = params.get("articleId");
 
     const timestamp = Date.now();
     const catalogueId = `${itemType.toUpperCase().substring(0, 4)}-${timestamp
@@ -241,6 +262,32 @@ async function handleCaptureUrl(captureUrl) {
         console.error("Failed to download image:", imgErr);
         // If download fails, save the original URL as a fallback
         frontmatter.image = imageUrl;
+      }
+    }
+
+    // Article handling
+    if (articleId && pendingArticles.has(articleId)) {
+      const html = pendingArticles.get(articleId);
+      pendingArticles.delete(articleId);
+
+      const dom = new JSDOM(html, { url: frontmatter.source });
+      const reader = new Readability(dom.window.document);
+      const article = reader.parse();
+
+      if (article) {
+        frontmatter.title = article.title || title;
+        if (article.byline) frontmatter.byline = article.byline;
+        if (article.siteName) frontmatter.siteName = article.siteName;
+        const content = article.content;
+
+        const fileContents = matter.stringify(content, frontmatter);
+        const saveDir = path.join(vaultPath, "article");
+        await fsp.mkdir(saveDir, { recursive: true });
+        const filePath = path.join(saveDir, `${slug}.md`);
+        await fsp.writeFile(filePath, fileContents, "utf8");
+
+        win?.webContents.send("vault:refresh-needed");
+        return;
       }
     }
 
